@@ -50,9 +50,11 @@
         initialize: function (options) {
             this.data = options.data;
             this.name = options.name;
+            this.columns = options.columns;
             this.editable = options.editable;
+            this.options = options;
             this._defineView();
-            this._createModelFromColumns();
+            this._createModelFromColumns(options.columns);
         },
 
         /**
@@ -62,7 +64,6 @@
             this.setElement($('<table></table>'));
             this._renderTableHeader();
             this._renderTableBody();
-            this.$el.html(this.template(this.model.toJson()));
             return this;
         },
 

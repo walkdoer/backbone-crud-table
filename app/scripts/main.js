@@ -36,7 +36,7 @@ window.BackboneCrudTable = {
             }]
         });
 
-        table.render();
+        $('body').append(table.render().el);
     }
 };
 
