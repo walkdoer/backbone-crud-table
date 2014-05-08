@@ -11,6 +11,7 @@ window.BackboneCrudTable = {
         var CRUDTable = window.CRUDTable;
         var table = new CRUDTable({
             name: '联系人表',
+            storage: 'local',
             columns: [{
                 name: 'address',
                 displayName: '地址'

@@ -55,6 +55,7 @@
             this.options = options;
             this._defineView();
             this._createModelFromColumns(options.columns);
+            this.listenTo(this.rows, 'add', this.add);
         },
 
         /**
@@ -111,7 +112,7 @@
             //表格行的View
             var rowViewCfg = {
                 tagName: 'tr',
-                template: this._createTemplate(),
+                template: _.template(this._createTemplate()),
                 events: {
                     //todo
                     'click .btn-delete' : 'clear'
@@ -128,6 +129,7 @@
                 //渲染界面
                 render: function () {
                     this.$el.html(this.template(this.model.toJSON()));
+                    return this;
                 }
             };
             this.RowView = Backbone.View.extend(rowViewCfg);
@@ -139,23 +141,24 @@
                 col;
             for (var i = 0, len = columns.length; i < len; i++) {
                 col = columns[i];
-                tpl += '<td><%=data.' + col.name + '%></td>';
+                tpl += '<td><%=' + col.name + '%></td>';
             }
             return tpl;
         },
+
         /**
          * 添加记录
          */
         add: function (row) {
             var rowView = new this.RowView({model: row});
-            this.$el.append(rowView.render().el);
+            this.$el.append(rowView.render().$el);
         },
 
         /**
          * 删除记录
          */
         delete: function () {
-        
+            //todo
         },
 
         /**
@@ -186,7 +189,11 @@
          * 渲染表格主体
          */
         _renderTableBody: function () {
-            //todo
+            var data = this.data;
+            for (var i = 0, len = data.length, d; i < len; i++) {
+                d = data[i];
+                this.rows.create(d);
+            }
         }
     });
 })(window);
