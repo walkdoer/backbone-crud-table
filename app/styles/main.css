@@ -6,9 +6,19 @@ body {
     width: 300px;
 }
 table {
+    width: 600px;
     font-size: 12px;
     border-collapse: collapse;
-    border: 1px solid #e1e1e1;
+    border: 1px solid #E3E3E3;
+}
+table thead {
+    border-top: 1px solid #ccc;
+}
+table caption {
+    font-size: 1.356rem;
+    text-align: left;
+    text-indent: 10px;
+    padding: 10px 0;
 }
 table tbody tr {
     border-bottom: 1px solid #e8e8e8;
@@ -19,20 +29,17 @@ table tbody td {
     padding: 10px 8px;
     color: #666;
     white-space: nowrap;
-    *border-bottom: 1px solid #e8e8e8;
-    *border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+    border-top: 1px solid #e8e8e8;
 }
 table thead th {
     line-height: 19px;
     padding: 8px;
     color: #444;
     cursor: pointer;
-    border-bottom: 1px solid #e1e1e1;
+    border-top: 1px solid #E4E4E4;
     cursor: pointer;
     text-align: left;
-    -webkit-box-shadow: inset 0px 1px 0 rgba(255, 255, 255, 1.0);
-    -moz-box-shadow: inset 0px 1px 0 rgba(255, 255, 255, 1.0);
-    box-shadow: inset 0px 1px 0 rgba(255, 255, 255, 1.0);
     background: -webkit-gradient(linear, 0 0, 0 100%, from(#fafafa), to(#f3f3f3));
     background: -moz-linear-gradient(top, #fafafa, #f3f3f3);
     background: -ms-linear-gradient(top, #fafafa, #f3f3f3);

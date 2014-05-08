@@ -13,6 +13,8 @@
  * 例子
  * var crudTable = new CRUDTable({
  *     name: '联系人表',
+ *     storage: 'local',
+ *     operators: ['add', 'delete', 'edit'],
  *     columns: [{
  *         name: 'address',
  *         displayName: '地址'
@@ -138,10 +140,25 @@
         _createTemplate: function () {
             var tpl = '',
                 columns = this.columns,
+                operators = this.options.operators,
+                defaultOperator = {
+                    edit: '编辑',
+                    delete: '删除'
+                },
                 col;
             for (var i = 0, len = columns.length; i < len; i++) {
                 col = columns[i];
                 tpl += '<td><%=' + col.name + '%></td>';
+            }
+            if (operators) {
+                tpl += '<td>';
+                _.each(operators, function (val) {
+                    if (typeof val === 'string') {
+                        //使用默认的文案
+                        tpl +=  '<a class="crud-' + val + '">' + (defaultOperator[val] || '') + '</a>';
+                    }
+                });
+                tpl += '</td>';
             }
             return tpl;
         },
@@ -180,6 +197,9 @@
             for (var i = 0, len = columns.length; i < len; i++) {
                 col = columns[i];
                 fragment.appendChild($('<th>' + col.displayName + '</th>')[0]);
+            }
+            if (this.options.operators) {
+                 fragment.appendChild($('<th>操作</th>')[0]);
             }
             $head.append(fragment);
             this.$el.append($head);
