@@ -50,6 +50,7 @@
         initialize: function (options) {
             this.data = options.data;
             this.name = options.name;
+            this.editable = options.editable;
             this._defineView();
             this._createModelFromColumns();
         },
@@ -106,9 +107,10 @@
          * 定义Row的View
          */
         _defineView: function () {
+            //表格行的View
             var rowViewCfg = {
                 tagName: 'tr',
-                template: _.template($('#tpl-crud-table-row').html()),
+                template: this._createTemplate(),
                 events: {
                     //todo
                     'click .btn-delete' : 'clear'
@@ -130,6 +132,16 @@
             this.RowView = Backbone.View.extend(rowViewCfg);
         },
 
+        _createTemplate: function () {
+            var tpl = '',
+                columns = this.columns,
+                col;
+            for (var i = 0, len = columns.length; i < len; i++) {
+                col = columns[i];
+                tpl += '<td><%=data.' + col.name + '%></td>';
+            }
+            return tpl;
+        },
         /**
          * 添加记录
          */
