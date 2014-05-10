@@ -46,3 +46,12 @@ table thead th {
     *background: #f5f5f5;
     white-space: nowrap;
 }
+
+.crud-btn {
+    margin:4px;
+    display: inline-block;
+    box-shadow: 0 0 1px #ccc;
+    padding: 3px;
+    border-radius: 2px;
+    background: -webkit-gradient(linear, 0 0, 0 100%, from(#fafafa), to(#f3f3f3));
+}

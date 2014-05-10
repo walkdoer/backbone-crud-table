@@ -14,7 +14,7 @@
  * var crudTable = new CRUDTable({
  *     name: '联系人表',
  *     storage: 'local',
- *     operators: ['add', 'delete', 'edit'],
+ *     operators: [‘delete', 'edit'],
  *     columns: [{
  *         name: 'address',
  *         displayName: '地址'
@@ -57,7 +57,7 @@
             this.options = options;
             this._defineView();
             this._createModelFromColumns(options.columns);
-            this.listenTo(this.rows, 'add', this.add);
+            this.listenTo(this.rowList, 'add', this.add);
         },
 
         /**
@@ -103,7 +103,7 @@
 
             //定义表格列表Model
             var RowCollection = Backbone.Collection.extend(collectionModelCfg);
-            this.rows = new RowCollection();
+            this.rowList = new RowCollection();
         },
 
         /**
@@ -117,7 +117,7 @@
                 template: _.template(this._createTemplate()),
                 events: {
                     //todo
-                    'click .btn-delete' : 'clear'
+                    'click .crud-delete' : 'clear'
                 },
 
                 //初始化
@@ -132,6 +132,9 @@
                 render: function () {
                     this.$el.html(this.template(this.model.toJSON()));
                     return this;
+                },
+                clear: function () {
+                    this.model.destroy();
                 }
             };
             this.RowView = Backbone.View.extend(rowViewCfg);
@@ -155,7 +158,7 @@
                 _.each(operators, function (val) {
                     if (typeof val === 'string') {
                         //使用默认的文案
-                        tpl +=  '<a class="crud-' + val + '">' + (defaultOperator[val] || '') + '</a>';
+                        tpl +=  '<a class="crud-btn crud-' + val + '">' + (defaultOperator[val] || '') + '</a>';
                     }
                 });
                 tpl += '</td>';
@@ -182,7 +185,7 @@
          * 加载数据
          */
         fetch: function () {
-            this.rows.fetch();
+            this.rowList.fetch();
         },
 
         /**
@@ -199,7 +202,7 @@
                 fragment.appendChild($('<th>' + col.displayName + '</th>')[0]);
             }
             if (this.options.operators) {
-                 fragment.appendChild($('<th>操作</th>')[0]);
+                fragment.appendChild($('<th>操作</th>')[0]);
             }
             $head.append(fragment);
             this.$el.append($head);
@@ -212,7 +215,7 @@
             var data = this.data;
             for (var i = 0, len = data.length, d; i < len; i++) {
                 d = data[i];
-                this.rows.create(d);
+                this.rowList.create(d);
             }
         }
     });
