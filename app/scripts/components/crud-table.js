@@ -6,6 +6,7 @@
  * 主要配置项
  *
  *     name: {String} 表格名称
+ *     editable: {Boolean} 是否可编辑，默认为false，不可编辑
  *     columns: {Array} 栏目配置
  *     data: {Array} 提供表格数据
  *     api: {object} 表格remote接口配置
@@ -15,6 +16,7 @@
  *     name: '联系人表',
  *     storage: 'local',
  *     operators: [‘delete', 'edit'],
+ *     editable: true,  
  *     columns: [{
  *         name: 'address',
  *         displayName: '地址'
@@ -117,7 +119,8 @@
                 template: _.template(this._createTemplate()),
                 events: {
                     //todo
-                    'click .crud-delete' : 'clear'
+                    'click .crud-delete' : 'clear',
+                    'click .crud-edit': 'edit'
                 },
 
                 //初始化
@@ -133,8 +136,18 @@
                     this.$el.html(this.template(this.model.toJSON()));
                     return this;
                 },
+
                 clear: function () {
                     this.model.destroy();
+                },
+                
+                edit: function () {
+                    this.$el.addClass('editing');
+                    this.$el.find('label').hide();
+                    //显示所有的编辑框
+                    var $inputs = this.$el.find('input').show();
+                    //聚焦在第一个编辑框
+                    $inputs.eq(0).focus();
                 }
             };
             this.RowView = Backbone.View.extend(rowViewCfg);
@@ -143,15 +156,21 @@
         _createTemplate: function () {
             var tpl = '',
                 columns = this.columns,
+                editable = this.editable,
                 operators = this.options.operators,
                 defaultOperator = {
                     edit: '编辑',
                     delete: '删除'
                 },
                 col;
-            for (var i = 0, len = columns.length; i < len; i++) {
+            for (var i = 0, len = columns.length, content; i < len; i++) {
                 col = columns[i];
-                tpl += '<td><%=' + col.name + '%></td>';
+                if (editable) {
+                    content = '<label><%=' + col.name + '%></label><input style="display:none;" name="' + col.name+ '" value="<%=' + col.name + '%>"/>'
+                } else {
+                    content = '<%=' + col.name + '%>';
+                }
+                tpl += '<td>' + content + '</td>';
             }
             if (operators) {
                 tpl += '<td>';

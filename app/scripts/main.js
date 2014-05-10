@@ -12,6 +12,7 @@ window.BackboneCrudTable = {
         var table = new CRUDTable({
             name: '联系人表',
             storage: 'local',
+            editable: true,
             operators: ['delete', 'edit'],
             columns: [{
                 name: 'address',
