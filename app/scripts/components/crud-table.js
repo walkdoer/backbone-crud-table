@@ -75,7 +75,8 @@
 
         events: {
             //清空所有数据
-            'click .crud-clear-all': 'clearAll'
+            'click .crud-clear-all': 'clearAll',
+            'click .crud-add': 'addNew'
         },
         /**
          * 定义并创建Model
@@ -98,6 +99,7 @@
                     //todo 校验
                 }
             });
+            this.RowModel = RowModel;
             var collectionModelCfg = {
                 model: RowModel
             };
@@ -245,6 +247,25 @@
         add: function (row) {
             var rowView = new this.RowView({model: row, columns: this.columns});
             this.$el.append(rowView.render().$el);
+            if (this.addingNew) {
+                this.curAdd = rowView;
+            }
+        },
+        
+        /**
+         * 添加新记录
+         */
+        addNew: function () {
+//             var that = this,
+//                 rowView = new this.RowView({model: new this.RowModel(), columns: this.columns});
+//             this.$el.append(rowView.render().$el);
+//             rowView.edit(function (model) {
+//                 rowView.remove();
+//                 that.rowList.create(model.toJSON());
+//             });
+            this.addingNew = true;
+            this.rowList.create();
+            this.curAdd.edit();
         },
 
         
@@ -271,7 +292,7 @@
          * 渲染表格头部
          */
         _renderTableHeader: function () {
-            this.$el.append($('<caption>' + this.name + '<a class="crud-btn crud-clear-all">清空所有数据</a></caption>'));
+            this.$el.append($('<caption>' + this.name + '<a class="crud-btn crud-add">添加</a><a class="crud-btn crud-clear-all">清空所有数据</a></caption>'));
             var columns = this.columns,
                 fragment = document.createDocumentFragment(),
                 col,
