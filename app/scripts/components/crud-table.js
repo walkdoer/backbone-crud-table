@@ -126,7 +126,8 @@
                 },
 
                 //初始化
-                initialize: function () {
+                initialize: function (options) {
+                    this.options = options;
                     //数据改变，重新渲染
                     this.listenTo(this.model, 'change', this.render);
                     //model删除数据，则界面Remove数据
@@ -153,6 +154,11 @@
                     this._editing(false);
                 },
                 
+                //取消
+                cancel: function () {
+                    this._editing(false);    
+                },
+                
                 //编辑
                 edit: function () {
                     this._editing(true);
@@ -168,7 +174,13 @@
                 
                 //获取value
                 _getValues: function () {
-                    var attrbutes = this.model.attrbutes;
+                    var that = this,
+                        columns = this.options.columns,
+                        data = {};
+                    _.each(columns, function (col) {
+                        data[col.name] = that.$el.find('input[name=' + col.name +']').val();
+                    });
+                    return data;
                 },
                 
                 //切换为编辑状态
@@ -226,7 +238,7 @@
          * 添加记录
          */
         add: function (row) {
-            var rowView = new this.RowView({model: row});
+            var rowView = new this.RowView({model: row, columns: this.columns});
             this.$el.append(rowView.render().$el);
         },
 
