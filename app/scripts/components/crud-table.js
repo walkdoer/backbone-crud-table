@@ -120,7 +120,9 @@
                 events: {
                     //todo
                     'click .crud-delete' : 'clear',
-                    'click .crud-edit': 'edit'
+                    'click .crud-edit': 'edit',
+                    'click .crud-save': 'save',
+                    'click .crud-cancel': 'cancel'
                 },
 
                 //初始化
@@ -140,25 +142,45 @@
                     return this;
                 },
 
+                //删除
                 clear: function () {
                     this.model.destroy();
                 },
                 
-                edit: function () {
-                    this.$el.addClass('editing');
-                    this._displayBtns(['edit', 'delete'], false);
-                    this._displayBtns(['save', 'cancel'], true);
-                    this.$labels.hide();
-                    //显示所有的编辑框
-                    this.$inputs.show();
-                    //聚焦在第一个编辑框
-                    this.$inputs.eq(0).focus();
+                //保存
+                save: function () {
+                    this.model.save(this._getValues());
+                    this._editing(false);
                 },
+                
+                //编辑
+                edit: function () {
+                    this._editing(true);
+                },
+                
+                //控制按钮显示与隐藏
                 _displayBtns: function (btns, isShow) {
                     var that = this;
                     _.each(btns, function (btn) {
                        that.$el.find('.crud-' + btn)[isShow ? 'show' : 'hide'](); 
                     });
+                },
+                
+                //获取value
+                _getValues: function () {
+                    var attrbutes = this.model.attrbutes;
+                },
+                
+                //切换为编辑状态
+                _editing: function (isEditing) {
+                    this.$el[isEditing ? 'addClass' : 'removeClass']('editing');
+                    this._displayBtns(['edit', 'delete'], !isEditing);
+                    this._displayBtns(['save', 'cancel'], isEditing);
+                    this.$labels[isEditing ? 'hide' : 'show']();
+                    //显示所有的编辑框
+                    this.$inputs[isEditing ? 'show' : 'hide']();
+                    //聚焦在第一个编辑框
+                    isEditing && this.$inputs.eq(0).focus();
                 }
             };
             this.RowView = Backbone.View.extend(rowViewCfg);
