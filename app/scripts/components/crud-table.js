@@ -56,6 +56,7 @@
             this.name = options.name;
             this.columns = options.columns;
             this.editable = options.editable;
+            this.autoLoad = options.autoLoad === undefined ? true : options.autoLoad;
             this.options = options;
             this._defineView();
             this._createModelFromColumns(options.columns);
@@ -68,7 +69,7 @@
         render: function () {
             this.setElement($('<table></table>'));
             this._renderTableHeader();
-            this._renderTableBody();
+            this.autoLoad && this.rowList.fetch();
             return this;
         },
 
@@ -253,7 +254,15 @@
          * 加载数据
          */
         fetch: function () {
-            this.rowList.fetch();
+            var that = this;
+            this.rowList.fetch({
+                success: function (e, data) {
+                    that._renderTableBody(data);
+                },
+                error: function (e) {
+                    //todo
+                }
+            });
         },
 
         /**
@@ -279,8 +288,8 @@
         /**
          * 渲染表格主体
          */
-        _renderTableBody: function () {
-            var data = this.data;
+        _renderTableBody: function (e, result) {
+            var data = result;
             for (var i = 0, len = data.length, d; i < len; i++) {
                 d = data[i];
                 this.rowList.create(d);
