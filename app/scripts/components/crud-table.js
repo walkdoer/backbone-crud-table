@@ -73,6 +73,10 @@
             return this;
         },
 
+        events: {
+            //清空所有数据
+            'click .crud-clear-all': 'clearAll'
+        },
         /**
          * 定义并创建Model
          * 创建 Row 和 RowCollection 对于的Model
@@ -243,13 +247,11 @@
             this.$el.append(rowView.render().$el);
         },
 
-        /**
-         * 删除记录
-         */
-        delete: function () {
-            //todo
+        
+        clearAll: function () {
+            _.invoke(this.rowList.toArray(), 'destroy');
         },
-
+        
         /**
          * 加载数据
          */
@@ -269,7 +271,7 @@
          * 渲染表格头部
          */
         _renderTableHeader: function () {
-            this.$el.append($('<caption>' + this.name +'</caption>'));
+            this.$el.append($('<caption>' + this.name + '<a class="crud-btn crud-clear-all">清空所有数据</a></caption>'));
             var columns = this.columns,
                 fragment = document.createDocumentFragment(),
                 col,
@@ -285,15 +287,15 @@
             this.$el.append($head);
         },
 
-        /**
-         * 渲染表格主体
-         */
-        _renderTableBody: function (e, result) {
-            var data = result;
-            for (var i = 0, len = data.length, d; i < len; i++) {
-                d = data[i];
-                this.rowList.create(d);
-            }
-        }
+//         /**
+//          * 渲染表格主体
+//          */
+//         _renderTableBody: function (e, result) {
+//             var data = result;
+//             for (var i = 0, len = data.length, d; i < len; i++) {
+//                 d = data[i];
+//                 this.rowList.create(d);
+//             }
+//         }
     });
 })(window);
