@@ -134,6 +134,9 @@
                 //渲染界面
                 render: function () {
                     this.$el.html(this.template(this.model.toJSON()));
+                    this.$labels = this.$el.find('label');
+                    this.$inputs = this.$el.find('input').hide();
+                    this._displayBtns(['save', 'cancel'], false);
                     return this;
                 },
 
@@ -143,11 +146,19 @@
                 
                 edit: function () {
                     this.$el.addClass('editing');
-                    this.$el.find('label').hide();
+                    this._displayBtns(['edit', 'delete'], false);
+                    this._displayBtns(['save', 'cancel'], true);
+                    this.$labels.hide();
                     //显示所有的编辑框
-                    var $inputs = this.$el.find('input').show();
+                    this.$inputs.show();
                     //聚焦在第一个编辑框
-                    $inputs.eq(0).focus();
+                    this.$inputs.eq(0).focus();
+                },
+                _displayBtns: function (btns, isShow) {
+                    var that = this;
+                    _.each(btns, function (btn) {
+                       that.$el.find('.crud-' + btn)[isShow ? 'show' : 'hide'](); 
+                    });
                 }
             };
             this.RowView = Backbone.View.extend(rowViewCfg);
@@ -160,13 +171,15 @@
                 operators = this.options.operators,
                 defaultOperator = {
                     edit: '编辑',
-                    delete: '删除'
+                    delete: '删除',
+                    cancel: '取消',
+                    save: '保存'
                 },
                 col;
             for (var i = 0, len = columns.length, content; i < len; i++) {
                 col = columns[i];
                 if (editable) {
-                    content = '<label><%=' + col.name + '%></label><input style="display:none;" name="' + col.name+ '" value="<%=' + col.name + '%>"/>'
+                    content = '<label><%=' + col.name + '%></label><input name="' + col.name+ '" value="<%=' + col.name + '%>"/>'
                 } else {
                     content = '<%=' + col.name + '%>';
                 }
@@ -180,6 +193,8 @@
                         tpl +=  '<a class="crud-btn crud-' + val + '">' + (defaultOperator[val] || '') + '</a>';
                     }
                 });
+                tpl +=  '<a class="crud-btn crud-save">' + defaultOperator.save + '</a>';
+                tpl +=  '<a class="crud-btn crud-cancel">' + defaultOperator.cancel + '</a>';
                 tpl += '</td>';
             }
             return tpl;
