@@ -73,7 +73,7 @@
             this.setElement($('<table></table>'));
             this._renderTableHeader();
             that._renderTableBody();
-            this.$loading = $('<div class="crud-mask"></div>');
+            this.$loading = $('<div class="crud-mask">loading</div>');
             this.$el.append(this.$loading);
             this.autoLoad && this.fetch();
             return this;
@@ -356,7 +356,7 @@
         },
         
         _loading: function (isLoading) {
-            this.$el.find('crud-mask')[isLoading ? 'show' : 'hide']();
+            this.$el.find('.crud-mask')[isLoading ? 'show' : 'hide']();
         }
     });
 })(window);
