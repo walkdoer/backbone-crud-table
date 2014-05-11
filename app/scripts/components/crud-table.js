@@ -72,9 +72,9 @@
             var that = this;
             this.setElement($('<table></table>'));
             this._renderTableHeader();
+            that._renderTableBody();
             this.autoLoad && this.rowList.fetch({
                 success: function () {
-                    that._renderTableBody();
                     that._renderTableFooter();
                     that.checkTableCount();
                 }
@@ -262,7 +262,7 @@
                 this.$el.find('tbody').empty();
             }
             var rowView = new this.RowView({model: row, columns: this.columns, addingNew: this.addingNew});
-            this.$el.append(rowView.render().$el);
+            this.$el.find('tbody').append(rowView.render().$el);
             if (this.addingNew) {
                 this.curAdd = rowView;
             }
