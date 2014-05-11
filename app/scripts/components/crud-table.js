@@ -172,7 +172,10 @@
                 
                 //取消
                 cancel: function () {
-                    this._editing(false);    
+                    this._editing(false);
+                    if (this.options.addingNew) {
+                        this.model.destroy();
+                    }
                 },
                 
                 //编辑
@@ -258,7 +261,7 @@
             if (this.rowList.length === 1) {
                 this.$el.find('tbody').empty();
             }
-            var rowView = new this.RowView({model: row, columns: this.columns});
+            var rowView = new this.RowView({model: row, columns: this.columns, addingNew: this.addingNew});
             this.$el.append(rowView.render().$el);
             if (this.addingNew) {
                 this.curAdd = rowView;
