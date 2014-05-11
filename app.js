@@ -4,6 +4,10 @@ var path = require('path');
 
 module.exports = function(config) {
     return {
+        '/': {
+            template: 'index.html',
+            get: function(req, res) {}
+        },
         '/getlist': {
             get: function(req, res) {
                 return {
@@ -133,6 +137,22 @@ module.exports = function(config) {
                         url:'http://m.baidu.com'
                       }
                     ]
+                };
+            }
+        },
+        '/share': {
+            post: function () {
+                return {
+                    ret: true,
+                    msg: '分享成功'
+                };
+            }
+        },
+        '/report': {
+            post: function () {
+                return {
+                    ret: true,
+                    msg: '举报成功'
                 };
             }
         }

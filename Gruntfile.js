@@ -1,329 +1,237 @@
-'use strict';
-var LIVERELOAD_PORT = 35729;
-var SERVER_PORT = 9000;
-var lrSnippet = require('connect-livereload')({port: LIVERELOAD_PORT});
-var mountFolder = function (connect, dir) {
-    return connect.static(require('path').resolve(dir));
-};
-
-// # Globbing
-// for performance reasons we're only matching one level down:
-// 'test/spec/{,*/}*.js'
-// use this if you want to match all subfolders:
-// 'test/spec/**/*.js'
-// templateFramework: 'lodash'
-
+// Generated on 2014-04-21 using generator-ucp 0.1.3
+//
 module.exports = function (grunt) {
-    // show elapsed time at the end
-    require('time-grunt')(grunt);
-    // load all grunt tasks
-    require('load-grunt-tasks')(grunt);
+    'use strict';
+    function readOptionalJSON(filepath) {
+        var data = {};
+        try {
+            data = grunt.file.readJSON(filepath);
+        } catch (e) {
 
-    // configurable paths
-    var yeomanConfig = {
-        app: 'app',
-        dist: 'dist'
-    };
-
+        }
+        return data;
+    }
+    var srcHintOptions = readOptionalJSON('.jshintrc');
     grunt.initConfig({
-        yeoman: yeomanConfig,
-        watch: {
+        pkg: grunt.file.readJSON('package.json'),
+        meta: {
+            banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
+                '<%= grunt.template.today("yyyy-mm-dd") %> */'
+        },
+        bowercopy: {
             options: {
-                nospawn: true,
-                livereload: true
+                clean: true
             },
-            compass: {
-                files: ['<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
-                tasks: ['compass']
+            src: {
+                // Keys are destinations (prefixed with `options.destPrefix`)
+                // Values are sources (prefixed with `options.srcPrefix`); One source per destination
+                // e.g. 'bower_components/chai/lib/chai.js' will be copied to 'test/js/libs/chai.js'
+                files: {
+                    'src/libs/zepto.min.js': 'zepto/zepto.min.js',
+                }
             },
-            livereload: {
+            tests: {
                 options: {
-                    livereload: grunt.option('livereloadport') || LIVERELOAD_PORT
+                    destPrefix: 'test/libs'
                 },
-                files: [
-                    '<%= yeoman.app %>/*.html',
-                    '{.tmp,<%= yeoman.app %>}/styles/{,*/}*.css',
-                    '{.tmp,<%= yeoman.app %>}/scripts/{,*/}*.js',
-                    '<%= yeoman.app %>/images/{,*/}*.{png,jpg,jpeg,gif,webp}',
-                    '<%= yeoman.app %>/scripts/templates/*.{ejs,mustache,hbs}',
-                    'test/spec/**/*.js'
-                ]
-            },
-            jst: {
-                files: [
-                    '<%= yeoman.app %>/scripts/templates/*.ejs'
-                ],
-                tasks: ['jst']
-            },
-            test: {
-                files: ['<%= yeoman.app %>/scripts/{,*/}*.js', 'test/spec/**/*.js'],
-                tasks: ['test:true']
+                files: {
+                    'qunit': 'qunit/qunit',
+                    'zepto.min.js': 'zepto/zepto.min.js',
+                    'underscore.js': 'underscore/underscore.js'
+                }
             }
         },
-        connect: {
+        watch: {
+            scripts: {
+                files: ['src/**/*.js'],
+                tasks: ['build']
+            },
+            tpl: {
+                files: ['src/tpl/**/*.tpl'],
+                tasks: ['tpl']
+            }
+        },
+        tpl: {
             options: {
-                port: grunt.option('port') || SERVER_PORT,
-                // change this to '0.0.0.0' to access the server from outside
-                hostname: 'localhost'
+                base: 'src/tpl'
             },
-            livereload: {
-                options: {
-                    middleware: function (connect) {
-                        return [
-                            lrSnippet,
-                            mountFolder(connect, '.tmp'),
-                            mountFolder(connect, yeomanConfig.app)
-                        ];
-                    }
-                }
-            },
-            test: {
-                options: {
-                    port: 9001,
-                    middleware: function (connect) {
-                        return [
-                            lrSnippet,
-                            mountFolder(connect, '.tmp'),
-                            mountFolder(connect, 'test'),
-                            mountFolder(connect, yeomanConfig.app)
-                        ];
-                    }
-                }
-            },
-            dist: {
-                options: {
-                    middleware: function (connect) {
-                        return [
-                            mountFolder(connect, yeomanConfig.dist)
-                        ];
-                    }
-                }
+            tpl: {
+                src: ['src/tpl/*.tpl'],
+                dest: 'src/js/tpl'
             }
         },
-        open: {
-            server: {
-                path: 'http://localhost:<%= connect.options.port %>'
-            },
-            test: {
-                path: 'http://localhost:<%= connect.test.options.port %>'
+        
+        commander: {
+            /* 定义要执行的shell语句 */
+            copyImage: {
+                command: 'cp -r src/images dist/'
             }
         },
+        cmd: {
+            options: {
+                base: 'src/js/',
+                shim: {
+                    'zepto': 'src/js/libs/zepto.min.js'
+                }
+            },
+            //书签
+            bookmark: {
+                src: [
+                    'src/js/**/*.js',
+                    '!src/js/seajs/',
+                    '!src/js/peek/'
+                ],
+                dest: 'compiled/bookmark/'
+            },
+            //偷偷看
+            peek: {
+                src: [
+                    'src/js/**/*.js',
+                    '!src/js/bookmark/'
+                ],
+                dest: 'compiled/peek/'
+            }
+        },
+        pack: {
+            css_bookmark: {
+                type: 'css',
+                src: [
+                    '<%= meta.banner %>',
+                    'src/css/reset.css',
+                    'src/css/bookmark.css'
+                ],
+                dest: 'dist/bookmark/bookmark.min.<%= pkg.version %>.css'
+            },
+            css_peek: {
+                type: 'css',
+                src: [
+                    '<%= meta.banner %>',
+                    'src/css/reset.css',
+                    'src/css/peek.css'
+                ],
+                dest: 'dist/peek/peek.min.<%= pkg.version %>.css'
+            },
+            bookmark: {
+                type: 'js',
+                options: {
+                    base: '<%= cmd.bookmark.dest %>'
+                },
+                src: [
+                    '<%= meta.banner %>',
+                    '<%= cmd.bookmark.dest %>seajs/sea.js',
+                    '<%= cmd.bookmark.dest %>**/*.js',
+                    '!<%= cmd.bookmark.dest %>seajs/sea-debug.js',
+                    '!<%= cmd.bookmark.dest %>peek/*.js'
+                ],
+                ignore: [
+                    /*这里输入需要排除的js文件*/
+                    '<%= cmd.bookmark.dest %>seajs/*.js'
+                ],
+                dest: 'dist/bookmark/bookmark.min.<%= pkg.version %>.js'
+            },
+            peek: {
+                type: 'js',
+                options: {
+                    base: '<%= cmd.peek.dest %>'
+                },
+                src: [
+                    '<%= meta.banner %>',
+                    '<%= cmd.peek.dest %>seajs/sea.js',
+                    '<%= cmd.peek.dest %>**/*.js',
+                    '!<%= cmd.peek.dest %>seajs/sea-debug.js',
+                    '!<%= cmd.peek.dest %>bookmark/*.js'
+                ],
+                ignore: [
+                    /*这里输入需要排除的js文件*/
+                    '<%= cmd.bookmark.dest %>seajs/*.js'
+                ],
+                dest: 'dist/peek/peek.min.<%= pkg.version %>.js'
+            }
+        },
+         // -----
+        //清除中间结果
         clean: {
-            dist: ['.tmp', '<%= yeoman.dist %>/*'],
-            server: '.tmp'
+            compiled: ['compiled']
         },
         jshint: {
-            options: {
-                jshintrc: '.jshintrc',
-                reporter: require('jshint-stylish')
-            },
-            all: [
-                'Gruntfile.js',
-                '<%= yeoman.app %>/scripts/{,*/}*.js',
-                '!<%= yeoman.app %>/scripts/vendor/*',
-                'test/spec/{,*/}*.js'
-            ]
-        },
-        mocha: {
             all: {
+                src: [
+                    'src/**/*.js'
+                ],
                 options: {
-                    run: true,
-                    src: ['http://localhost:<%= connect.test.options.port %>/index.html']
+                    jshintrc: true
                 }
-            }
-        },
-        compass: {
-            options: {
-                sassDir: '<%= yeoman.app %>/styles',
-                cssDir: '.tmp/styles',
-                imagesDir: '<%= yeoman.app %>/images',
-                javascriptsDir: '<%= yeoman.app %>/scripts',
-                fontsDir: '<%= yeoman.app %>/styles/fonts',
-                importPath: '<%= yeoman.app %>/bower_components',
-                relativeAssets: true
             },
-            dist: {},
-            server: {
+            //由于源码已经经过jshint，所以合并之后的文件则不进行检查
+            //目前暂时取消
+            // dist: {
+            //     src: 'dist/com.js',
+            //     options: srcHintOptions
+            // }
+        },
+        server: {
+            publicDir: './src',
+            tplDir: './src/tpl',
+            staticMapping: {
+                '/public': './src'
+            },
+            // testPath: '/test',
+            port: 5040
+        },
+        htmlbuild: {
+
+            bookmark: {
+                src: './src/tpl/bookmark.html',
+                dest: './dist/',
                 options: {
-                    debugInfo: true
+                    //beautify: true,
+                    //prefix: '//some-cdn',
+                    //relative: true,
+                    scripts: {
+                        main: './dist/bookmark/*.js'
+                    },
+                    styles: {
+                        main: './dist/bookmark/*.css'
+                    }
                 }
-            }
-        },
-        // not enabled since usemin task does concat and uglify
-        // check index.html to edit your build targets
-        // enable this task if you prefer defining your build targets here
-        /*uglify: {
-            dist: {}
-        },*/
-        useminPrepare: {
-            html: '<%= yeoman.app %>/index.html',
-            options: {
-                dest: '<%= yeoman.dist %>'
-            }
-        },
-        usemin: {
-            html: ['<%= yeoman.dist %>/{,*/}*.html'],
-            css: ['<%= yeoman.dist %>/styles/{,*/}*.css'],
-            options: {
-                dirs: ['<%= yeoman.dist %>']
-            }
-        },
-        imagemin: {
-            dist: {
-                files: [{
-                    expand: true,
-                    cwd: '<%= yeoman.app %>/images',
-                    src: '{,*/}*.{png,jpg,jpeg}',
-                    dest: '<%= yeoman.dist %>/images'
-                }]
-            }
-        },
-        cssmin: {
-            dist: {
-                files: {
-                    '<%= yeoman.dist %>/styles/main.css': [
-                        '.tmp/styles/{,*/}*.css',
-                        '<%= yeoman.app %>/styles/{,*/}*.css'
-                    ]
-                }
-            }
-        },
-        htmlmin: {
-            dist: {
+            },
+            peek: {
+                src: './src/tpl/peek.html',
+                dest: './dist/',
                 options: {
-                    /*removeCommentsFromCDATA: true,
-                    // https://github.com/yeoman/grunt-usemin/issues/44
-                    //collapseWhitespace: true,
-                    collapseBooleanAttributes: true,
-                    removeAttributeQuotes: true,
-                    removeRedundantAttributes: true,
-                    useShortDoctype: true,
-                    removeEmptyAttributes: true,
-                    removeOptionalTags: true*/
-                },
-                files: [{
-                    expand: true,
-                    cwd: '<%= yeoman.app %>',
-                    src: '*.html',
-                    dest: '<%= yeoman.dist %>'
-                }]
-            }
-        },
-        copy: {
-            dist: {
-                files: [{
-                    expand: true,
-                    dot: true,
-                    cwd: '<%= yeoman.app %>',
-                    dest: '<%= yeoman.dist %>',
-                    src: [
-                        '*.{ico,txt}',
-                        '.htaccess',
-                        'images/{,*/}*.{webp,gif}',
-                        'styles/fonts/{,*/}*.*',
-                        'bower_components/sass-bootstrap/fonts/*.*'
-                    ]
-                }]
-            }
-        },
-        jst: {
-            compile: {
-                files: {
-                    '.tmp/scripts/templates.js': ['<%= yeoman.app %>/scripts/templates/*.ejs']
-                }
-            }
-        },
-        rev: {
-            dist: {
-                files: {
-                    src: [
-                        '<%= yeoman.dist %>/scripts/{,*/}*.js',
-                        '<%= yeoman.dist %>/styles/{,*/}*.css',
-                        '<%= yeoman.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp}',
-                        '/styles/fonts/{,*/}*.*',
-                        'bower_components/sass-bootstrap/fonts/*.*'
-                    ]
+                    //beautify: true,
+                    //prefix: '//some-cdn',
+                    //relative: true,
+                    scripts: {
+                        main: './dist/peek/*.js'
+                    },
+                    styles: {
+                        main: './dist/peek/*.css'
+                    }
                 }
             }
         }
     });
+    grunt.loadTasks('build/tasks');
 
-    grunt.registerTask('createDefaultTemplate', function () {
-        grunt.file.write('.tmp/scripts/templates.js', 'this.JST = this.JST || {};');
-    });
-
-    grunt.registerTask('server', function (target) {
-        grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
-        grunt.task.run(['serve' + (target ? ':' + target : '')]);
-    });
-
-    grunt.registerTask('serve', function (target) {
-        if (target === 'dist') {
-            return grunt.task.run(['build', 'open:server', 'connect:dist:keepalive']);
-        }
-
-        if (target === 'test') {
-            return grunt.task.run([
-                'clean:server',
-                'createDefaultTemplate',
-                'jst',
-                'compass:server',
-                'connect:test',
-                'open:test',
-                'watch'
-            ]);
-        }
-
-        grunt.task.run([
-            'clean:server',
-            'createDefaultTemplate',
-            'jst',
-            'compass:server',
-            'connect:livereload',
-            'open:server',
-            'watch'
-        ]);
-    });
-
-    grunt.registerTask('test', function (isConnected) {
-        isConnected = Boolean(isConnected);
-        var testTasks = [
-                'clean:server',
-                'createDefaultTemplate',
-                'jst',
-                'compass',
-                'connect:test',
-                'mocha',
-            ];
-
-        if(!isConnected) {
-            return grunt.task.run(testTasks);
-        } else {
-            // already connected so not going to connect again, remove the connect:test task
-            testTasks.splice(testTasks.indexOf('connect:test'), 1);
-            return grunt.task.run(testTasks);
-        }
-    });
-
-    grunt.registerTask('build', [
-        'clean:dist',
-        'createDefaultTemplate',
-        'jst',
-        'compass:dist',
-        'useminPrepare',
-        'imagemin',
-        'htmlmin',
-        'concat',
-        'cssmin',
-        'uglify',
-        'copy',
-        'rev',
-        'usemin'
-    ]);
-
-    grunt.registerTask('default', [
-        'jshint',
-        'test',
-        'build'
-    ]);
+    //同步bower库的文件到需要的文件夹
+    grunt.loadNpmTasks('grunt-bowercopy');
+    //jsHint
+    grunt.loadNpmTasks('grunt-contrib-jshint');
+    //监听文件
+    grunt.loadNpmTasks('grunt-contrib-watch');
+    //清除文件
+    grunt.loadNpmTasks('grunt-contrib-clean');
+    //构建html文件
+    grunt.loadNpmTasks('grunt-html-build');
+    //bower the denpendencies
+    grunt.registerTask('bower', 'bowercopy');
+    //build project
+    grunt.registerTask('build', ['clean', 'cmd', 'pack', 'htmlbuild', 'commander:copyImage']);
+    //use this task when under developing
+    grunt.registerTask('dev', ['watch', 'server']);
+    //test
+    grunt.registerTask('test', ['jshint']);
+    //default task, when you run command 'grunt'
+    grunt.registerTask('default', ['bower', 'build', 'dev', 'server']);
 };
