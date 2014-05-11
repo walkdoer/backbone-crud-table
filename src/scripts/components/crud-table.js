@@ -107,7 +107,10 @@
             });
             this.RowModel = RowModel;
             var collectionModelCfg = {
-                model: RowModel
+                model: RowModel,
+                parse: function (data) {
+                    return data.data;
+                }
             };
 
             //本地存储模式，则使用localStorage进行存储数据
@@ -120,7 +123,6 @@
             } else {
                 throw new Error('数据库option.storage配置出错,取值是remote或者local');
             }
-
             //定义表格列表Model
             var RowCollection = Backbone.Collection.extend(collectionModelCfg);
             this.rowList = new RowCollection();

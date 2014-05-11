@@ -16,14 +16,23 @@ window.BackboneCrudTable = {
             url: 'getlist',
             operators: ['delete', 'edit'],
             columns: [{
-                name: 'address',
-                displayName: '地址'
+                name: 'title',
+                displayName: '标题'
             }, {
-                name: 'tel',
-                displayName: '电话'
+                name: 'url',
+                displayName: '链接地址'
             }, {
-                name: 'name',
-                displayName: '姓名'
+                name: 'img',
+                displayName: '图片'
+            }, {
+                name: 'prov',
+                displayName: '省份'
+            }, {
+                name: 'city',
+                displayName: '城市'
+            }, {
+                name: 'fr',
+                displayName: '平台'
             }]
 //             data: [{
 //                 name: 'andrew',

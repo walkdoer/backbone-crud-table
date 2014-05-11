@@ -37,6 +37,8 @@ table tbody td {
     white-space: nowrap;
     border-bottom: 1px solid #e8e8e8;
     border-top: 1px solid #e8e8e8;
+    max-width: 100px;
+    overflow: hidden;
 }
 table thead th {
     line-height: 19px;
