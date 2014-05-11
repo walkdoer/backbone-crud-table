@@ -62,3 +62,8 @@ table tfoot tr {
     font-size: 13px;
     text-indent: 0;
 }
+
+.crud-no-data td{
+    text-align: center;
+    padding: 50px 0;
+}

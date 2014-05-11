@@ -62,6 +62,7 @@
             this._defineView();
             this._createModelFromColumns(options.columns);
             this.listenTo(this.rowList, 'add', this.add);
+            this.listenTo(this.rowList, 'remove', this.checkTableCount);
         },
 
         /**
@@ -73,8 +74,9 @@
             this._renderTableHeader();
             this.autoLoad && this.rowList.fetch({
                 success: function () {
-                    console.log('load success');
+                    that._renderTableBody();
                     that._renderTableFooter();
+                    that.checkTableCount();
                 }
             });
             return this;
@@ -252,6 +254,10 @@
          * 添加记录
          */
         add: function (row) {
+            //添加新的记录，则清空没有数据的提示
+            if (this.rowList.length === 1) {
+                this.$el.find('tbody').empty();
+            }
             var rowView = new this.RowView({model: row, columns: this.columns});
             this.$el.append(rowView.render().$el);
             if (this.addingNew) {
@@ -287,12 +293,18 @@
             var that = this;
             this.rowList.fetch({
                 success: function (e, data) {
-                    that._renderTableBody(data);
+                    that.checkTableCount();
                 },
                 error: function (e) {
                     //todo
                 }
             });
+        },
+        
+        checkTableCount: function () {
+            if (this.rowList.length === 0) {
+                this.$el.find('tbody').append($('<tr class="crud-no-data"><td colspan="' + (this.columns.length + 1) +'">没有数据</td></tr>'));
+            }
         },
 
         /**
@@ -317,16 +329,17 @@
 
         _renderTableFooter: function () {
             this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'">' + this.btnGroup + '</td></tr></tfoot>'))
-        }
-//         /**
-//          * 渲染表格主体
-//          */
-//         _renderTableBody: function (e, result) {
+        },
+        /**
+         * 渲染表格主体
+         */
+        _renderTableBody: function (e, result) {
 //             var data = result;
 //             for (var i = 0, len = data.length, d; i < len; i++) {
 //                 d = data[i];
 //                 this.rowList.create(d);
 //             }
-//         }
+            this.$el.append('<tbody>');
+        }
     });
 })(window);
