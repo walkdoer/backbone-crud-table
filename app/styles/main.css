@@ -9,10 +9,15 @@ table {
     width: 600px;
     font-size: 12px;
     border-collapse: collapse;
+    box-sizing: border-box;
     border: 1px solid #E3E3E3;
+    display: table;
 }
 table thead {
     border-top: 1px solid #ccc;
+}
+table tbody {
+    position:relative;
 }
 table caption {
     font-size: 1.356rem;
@@ -24,6 +29,7 @@ table tbody tr {
     border-bottom: 1px solid #e8e8e8;
     border-top: 1px solid #e8e8e8;
 }
+table tbody tr:hover { box-shadow: inset 0px 2px 18px 0px rgba(0,0,0,0.08); cursor: pointer; }
 table tbody td {
     line-height: 19px;
     padding: 10px 8px;
@@ -66,4 +72,10 @@ table tfoot tr {
 .crud-no-data td{
     text-align: center;
     padding: 50px 0;
+}
+
+.crud-mask {
+    z-index: 9999;
+    background:#ccc;
+    opacity: 0.5;
 }

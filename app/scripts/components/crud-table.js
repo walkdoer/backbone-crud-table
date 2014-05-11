@@ -73,12 +73,9 @@
             this.setElement($('<table></table>'));
             this._renderTableHeader();
             that._renderTableBody();
-            this.autoLoad && this.rowList.fetch({
-                success: function () {
-                    that._renderTableFooter();
-                    that.checkTableCount();
-                }
-            });
+            this.$loading = $('<div class="crud-mask"></div>');
+            this.$el.append(this.$loading);
+            this.autoLoad && this.fetch();
             return this;
         },
 
@@ -114,9 +111,14 @@
             };
 
             //本地存储模式，则使用localStorage进行存储数据
-            if (this.options.storage === 'local') {
+            var storage = this.options.storage;
+            if (storage === 'local') {
                 var storageKey = 'backbone-storage-crud-table-' + this.options.name;
                 collectionModelCfg.localStorage = new Backbone.LocalStorage(storageKey);
+            } else if (storage === 'remote') {
+                collectionModelCfg.url = this.options.url;
+            } else {
+                throw new Error('数据库option.storage配置出错,取值是remote或者local');
             }
 
             //定义表格列表Model
@@ -297,12 +299,16 @@
          */
         fetch: function () {
             var that = this;
+            this._loading(true);
             this.rowList.fetch({
                 success: function (e, data) {
+                    that._loading(false);
+                    that._renderTableFooter();
                     that.checkTableCount();
                 },
                 error: function (e) {
                     //todo
+                    that._loading(false);
                 }
             });
         },
@@ -336,6 +342,7 @@
         _renderTableFooter: function () {
             this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'">' + this.btnGroup + '</td></tr></tfoot>'))
         },
+        
         /**
          * 渲染表格主体
          */
@@ -346,6 +353,10 @@
 //                 this.rowList.create(d);
 //             }
             this.$el.append('<tbody>');
+        },
+        
+        _loading: function (isLoading) {
+            this.$el.find('crud-mask')[isLoading ? 'show' : 'hide']();
         }
     });
 })(window);
