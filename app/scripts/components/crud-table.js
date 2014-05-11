@@ -144,6 +144,7 @@
                 //初始化
                 initialize: function (options) {
                     this.options = options;
+                    this.addingNew = options.addingNew;
                     //数据改变，重新渲染
                     this.listenTo(this.model, 'change', this.render);
                     //model删除数据，则界面Remove数据
@@ -167,13 +168,14 @@
                 //保存
                 save: function () {
                     this.model.save(this._getValues());
+                    this.addingNew = false;
                     this._editing(false);
                 },
                 
                 //取消
                 cancel: function () {
                     this._editing(false);
-                    if (this.options.addingNew) {
+                    if (this.addingNew) {
                         this.model.destroy();
                     }
                 },
@@ -265,6 +267,7 @@
             this.$el.find('tbody').append(rowView.render().$el);
             if (this.addingNew) {
                 this.curAdd = rowView;
+                this.addingNew = false;
             }
         },
         
