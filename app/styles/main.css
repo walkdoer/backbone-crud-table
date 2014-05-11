@@ -46,7 +46,9 @@ table thead th {
     *background: #f5f5f5;
     white-space: nowrap;
 }
-
+table tfoot tr {
+    background: #F6F6F6;
+}
 .crud-btn {
     margin:4px;
     display: inline-block;
@@ -55,7 +57,7 @@ table thead th {
     border-radius: 2px;
     background: -webkit-gradient(linear, 0 0, 0 100%, from(#fafafa), to(#f3f3f3));
 }
-.crud-clear-all{
+.crud-h-btn{
     float: right;
     font-size: 13px;
     text-indent: 0;

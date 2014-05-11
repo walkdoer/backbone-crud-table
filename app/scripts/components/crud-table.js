@@ -47,7 +47,8 @@
 (function (window, undefined) {
     'use strict';
     window.CRUDTable = Backbone.View.extend({
-
+            
+        btnGroup: '<a class="crud-btn crud-h-btn crud-add">添加</a><a class="crud-btn crud-h-btn crud-clear-all">清空所有数据</a>',
         /**
          * 初始化
          */
@@ -67,9 +68,15 @@
          * 渲染
          */
         render: function () {
+            var that = this;
             this.setElement($('<table></table>'));
             this._renderTableHeader();
-            this.autoLoad && this.rowList.fetch();
+            this.autoLoad && this.rowList.fetch({
+                success: function () {
+                    console.log('load success');
+                    that._renderTableFooter();
+                }
+            });
             return this;
         },
 
@@ -292,7 +299,7 @@
          * 渲染表格头部
          */
         _renderTableHeader: function () {
-            this.$el.append($('<caption>' + this.name + '<a class="crud-btn crud-add">添加</a><a class="crud-btn crud-clear-all">清空所有数据</a></caption>'));
+            this.$el.append($('<caption>' + this.name + this.btnGroup + '</caption>'));
             var columns = this.columns,
                 fragment = document.createDocumentFragment(),
                 col,
@@ -308,6 +315,9 @@
             this.$el.append($head);
         },
 
+        _renderTableFooter: function () {
+            this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'">' + this.btnGroup + '</td></tr></tfoot>'))
+        }
 //         /**
 //          * 渲染表格主体
 //          */
