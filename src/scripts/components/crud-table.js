@@ -54,7 +54,6 @@
          */
         initialize: function (options) {
             Backbone.emulateHTTP = options.emulateHTTP;
-            Backbone.emulateJSON = true;
             this.data = options.data;
             this.name = options.name;
             this.columns = options.columns;
@@ -185,6 +184,7 @@
                 //删除
                 clear: function () {
                     var that = this;
+                    Backbone.emulateJSON = true;
                     this.model.destroy({
                         data: table.options.params.delete(this.model),
                         success: function() {
@@ -198,7 +198,16 @@
 
                 //保存
                 save: function () {
-                    this.model.save(this._getValues());
+                    var that = this;
+                    Backbone.emulateJSON = false;
+                    this.model.save(table.options.params.save(this._getValues()), {
+                        success: function () {
+                            that.trigger('addSuccess', that.model);
+                        },
+                        error: function () {
+                            that.trigger('addError', that.model);
+                        }
+                    });
                     this.addingNew = false;
                     this._editing(false);
                 },
@@ -311,16 +320,19 @@
          * 添加新记录
          */
         addNew: function () {
-//             var that = this,
-//                 rowView = new this.RowView({model: new this.RowModel(), columns: this.columns});
-//             this.$el.append(rowView.render().$el);
-//             rowView.edit(function (model) {
-//                 rowView.remove();
-//                 that.rowList.create(model.toJSON());
-//             });
-            this.addingNew = true;
-            this.rowList.create();
-            this.curAdd.edit();
+            var that = this,
+                rowView = new this.RowView({model: new this.RowModel(), columns: this.columns});
+            this.$el.append(rowView.render().$el);
+            rowView.edit();
+            this.listenTo(rowView, 'addSuccess', function (model) {
+                that.rowList.add(model);
+            });
+            this.listenTo(rowView, 'addError', function () {
+                alert('添加失败');
+            });
+            //this.addingNew = true;
+            //this.rowList.create();
+            //this.curAdd.edit();
         },
 
 
