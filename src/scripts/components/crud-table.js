@@ -46,7 +46,7 @@
 
 (function (window, undefined) {
     'use strict';
-    window.CRUDTable = Backbone.View.extend({
+    window.CrudTable = Backbone.View.extend({
             
         btnGroup: '<a class="crud-btn crud-h-btn crud-add">添加</a><a class="crud-btn crud-h-btn crud-clear-all">清空所有数据</a>',
         /**
@@ -56,6 +56,7 @@
             this.data = options.data;
             this.name = options.name;
             this.columns = options.columns;
+            this.className = options.className;
             this.editable = options.editable;
             this.autoLoad = options.autoLoad === undefined ? true : options.autoLoad;
             this.options = options;
@@ -71,6 +72,7 @@
         render: function () {
             var that = this;
             this.setElement($('<table></table>'));
+            this.$el.addClass(this.className);
             this._renderTableHeader();
             that._renderTableBody();
             this.$loading = $('<div class="crud-mask">loading</div>');
