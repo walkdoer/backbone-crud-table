@@ -105,10 +105,14 @@
                 defaults: function () {
                     return defaultValues;
                 },
-                parse: function (result) {
-                    return result;
-                },
                 api: this.options.api,
+                parse: function (result) {
+                    if (result.id !== undefined) {
+                        return result;
+                    } else {
+                        return result.data;
+                    }
+                },
                 sync: function(method, model, options) {
                     options = options || {};
                     options.wait = true;
