@@ -95,8 +95,8 @@
             var defaultValues = {};
             for (var i = 0, len = columns.length; i < len; i++) {
                 var item = columns[i];
-                defaultValues[item.name] = item.default === undefined ? '' :
-                                            item.default;
+                defaultValues[item.name] = item.defaultValue === undefined ? '' :
+                                            item.defaultValue;
             }
             //定义表格每一行的Model
             var RowModel = Backbone.Model.extend({
@@ -110,9 +110,7 @@
             this.RowModel = RowModel;
             var collectionModelCfg = {
                 model: RowModel,
-                parse: function (data) {
-                    return data.data;
-                }
+                parse: this.options.parse
             };
 
             //本地存储模式，则使用localStorage进行存储数据
@@ -170,14 +168,14 @@
                 clear: function () {
                     this.model.destroy();
                 },
-                
+
                 //保存
                 save: function () {
                     this.model.save(this._getValues());
                     this.addingNew = false;
                     this._editing(false);
                 },
-                
+
                 //取消
                 cancel: function () {
                     this._editing(false);
@@ -185,12 +183,12 @@
                         this.model.destroy();
                     }
                 },
-                
+
                 //编辑
                 edit: function () {
                     this._editing(true);
                 },
-                
+
                 //控制按钮显示与隐藏
                 _displayBtns: function (btns, isShow) {
                     var that = this;
@@ -198,7 +196,7 @@
                        that.$el.find('.crud-' + btn)[isShow ? 'show' : 'hide'](); 
                     });
                 },
-                
+
                 //获取value
                 _getValues: function () {
                     var that = this,
@@ -209,7 +207,7 @@
                     });
                     return data;
                 },
-                
+
                 //切换为编辑状态
                 _editing: function (isEditing) {
                     this.$el[isEditing ? 'addClass' : 'removeClass']('editing');
@@ -230,6 +228,7 @@
                 columns = this.columns,
                 editable = this.editable,
                 operators = this.options.operators,
+                colEditable,
                 defaultOperator = {
                     edit: '编辑',
                     delete: '删除',
@@ -238,9 +237,12 @@
                 },
                 col;
             for (var i = 0, len = columns.length, content; i < len; i++) {
-                col = columns[i];
-                if (editable) {
-                    content = '<label><%=' + col.name + '%></label><input name="' + col.name+ '" value="<%=' + col.name + '%>"/>'
+                col = _.extend({}, {hidden: false, editable: true}, columns[i]);
+                if (col.hidden) {
+                    continue;
+                }
+                if (editable && col.editable) {
+                    content = '<label><%=' + col.name + '%></label><input name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
                 } else {
                     content = '<%=' + col.name + '%>';
                 }
@@ -333,6 +335,10 @@
                 col,
                 $head = $('<thead><tr></tr></thead>');
             for (var i = 0, len = columns.length; i < len; i++) {
+                col = _.extend({}, {hidden: false}, columns[i]);
+                if (col.hidden) {
+                    continue;
+                }
                 col = columns[i];
                 fragment.appendChild($('<th>' + col.displayName + '</th>')[0]);
             }
