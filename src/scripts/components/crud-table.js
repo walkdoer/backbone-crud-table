@@ -110,7 +110,13 @@
             this.RowModel = RowModel;
             var collectionModelCfg = {
                 model: RowModel,
-                parse: this.options.parse
+                api: this.options.api,
+                parse: this.options.parse,
+                sync: function(method, model, options) {
+                    options = options || {};
+                    options.url = model.api[method.toLowerCase()];
+                    return Backbone.sync.apply(this, arguments);
+                }
             };
 
             //本地存储模式，则使用localStorage进行存储数据
@@ -166,7 +172,7 @@
 
                 //删除
                 clear: function () {
-                    this.model.destroy();
+                    this.trigger('delete', this.model);
                 },
 
                 //保存
@@ -272,6 +278,7 @@
                 this.$el.find('tbody').empty();
             }
             var rowView = new this.RowView({model: row, columns: this.columns, addingNew: this.addingNew});
+            this.listenTo(rowView, 'delete', this.clear);
             this.$el.find('tbody').append(rowView.render().$el);
             if (this.addingNew) {
                 this.curAdd = rowView;
@@ -295,11 +302,17 @@
             this.curAdd.edit();
         },
 
-        
+
+        //删除
+        clear: function (model) {
+            this.rowList.remove(model);
+        },
+
+        //删除全部
         clearAll: function () {
             _.invoke(this.rowList.toArray(), 'destroy');
         },
-        
+
         /**
          * 加载数据
          */
