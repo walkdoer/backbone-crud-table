@@ -53,6 +53,8 @@
          * 初始化
          */
         initialize: function (options) {
+            Backbone.emulateHTTP = options.emulateHTTP;
+            Backbone.emulateJSON = true;
             this.data = options.data;
             this.name = options.name;
             this.columns = options.columns;
@@ -100,8 +102,16 @@
             }
             //定义表格每一行的Model
             var RowModel = Backbone.Model.extend({
+                idAttribute: this.options.idAttribute,
                 defaults: function () {
                     return defaultValues;
+                },
+                api: this.options.api,
+                sync: function(method, model, options) {
+                    options = options || {};
+                    options.wait = true;
+                    options.url = model.api[method.toLowerCase()];
+                    return Backbone.sync.apply(this, arguments);
                 },
                 validate: function () {
                     //todo 校验
@@ -111,6 +121,7 @@
             var collectionModelCfg = {
                 model: RowModel,
                 api: this.options.api,
+                idAttribute: this.options.idAttribute,
                 parse: this.options.parse,
                 sync: function(method, model, options) {
                     options = options || {};
@@ -139,6 +150,7 @@
          * 定义Row的View
          */
         _defineView: function () {
+            var table = this;
             //表格行的View
             var rowViewCfg = {
                 tagName: 'tr',
@@ -172,7 +184,16 @@
 
                 //删除
                 clear: function () {
-                    this.trigger('delete', this.model);
+                    var that = this;
+                    this.model.destroy({
+                        data: table.options.params.delete(this.model),
+                        success: function() {
+                            that.trigger('deleteSuccess', that.model);
+                        },
+                        error: function() {
+                            that.trigger('deleteError', that.model);
+                        }
+                    });
                 },
 
                 //保存
@@ -278,14 +299,14 @@
                 this.$el.find('tbody').empty();
             }
             var rowView = new this.RowView({model: row, columns: this.columns, addingNew: this.addingNew});
-            this.listenTo(rowView, 'delete', this.clear);
+            //this.listenTo(rowView, 'delete', this.clear);
             this.$el.find('tbody').append(rowView.render().$el);
             if (this.addingNew) {
                 this.curAdd = rowView;
                 this.addingNew = false;
             }
         },
-        
+
         /**
          * 添加新记录
          */
@@ -304,9 +325,9 @@
 
 
         //删除
-        clear: function (model) {
-            this.rowList.remove(model);
-        },
+        //clear: function (model) {
+        //    this.rowList.remove(model);
+        //},
 
         //删除全部
         clearAll: function () {
@@ -331,10 +352,11 @@
                 }
             });
         },
-        
+
         checkTableCount: function () {
             if (this.rowList.length === 0) {
-                this.$el.find('tbody').append($('<tr class="crud-no-data"><td colspan="' + (this.columns.length + 1) +'">没有数据</td></tr>'));
+                this.$el.find('tbody').append($('<tr class="crud-no-data"><td colspan="' +
+                    (this.columns.length + 1) +'">没有数据</td></tr>'));
             }
         },
 
@@ -363,21 +385,20 @@
         },
 
         _renderTableFooter: function () {
-            this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'">' + this.btnGroup + '</td></tr></tfoot>'))
+            this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'">'
+                        + this.btnGroup + '</td></tr></tfoot>'));
         },
-        
+
         /**
          * 渲染表格主体
          */
         _renderTableBody: function (e, result) {
-//             var data = result;
-//             for (var i = 0, len = data.length, d; i < len; i++) {
-//                 d = data[i];
-//                 this.rowList.create(d);
-//             }
             this.$el.append('<tbody>');
         },
-        
+
+        /**
+         * 切换界面的loading状态
+         */
         _loading: function (isLoading) {
             this.$el.find('.crud-mask')[isLoading ? 'show' : 'hide']();
         }
