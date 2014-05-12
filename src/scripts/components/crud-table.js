@@ -105,6 +105,9 @@
                 defaults: function () {
                     return defaultValues;
                 },
+                parse: function (result) {
+                    return result;
+                },
                 api: this.options.api,
                 sync: function(method, model, options) {
                     options = options || {};
@@ -201,8 +204,12 @@
                     var that = this;
                     Backbone.emulateJSON = false;
                     this.model.save(table.options.params.save(this._getValues()), {
-                        success: function () {
-                            that.trigger('addSuccess', that.model);
+                        success: function (m, result) {
+                            if (result.success) {
+                                that.trigger('addSuccess', that.model);
+                            } else {
+                                that.trigger('addError', result.msg);
+                            }
                         },
                         error: function () {
                             that.trigger('addError', that.model);
@@ -326,9 +333,10 @@
             rowView.edit();
             this.listenTo(rowView, 'addSuccess', function (model) {
                 that.rowList.add(model);
+                rowView.remove();
             });
-            this.listenTo(rowView, 'addError', function () {
-                alert('添加失败');
+            this.listenTo(rowView, 'addError', function (msg) {
+                alert('失败:' + msg);
             });
             //this.addingNew = true;
             //this.rowList.create();
