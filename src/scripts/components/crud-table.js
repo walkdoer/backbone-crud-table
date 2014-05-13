@@ -77,6 +77,7 @@
             this.$el.addClass(this.className);
             this._renderTableHeader();
             that._renderTableBody();
+            that._renderTableFooter();
             this.$loading = $('<div class="crud-mask">loading</div>');
             this.$el.append(this.$loading);
             return this;
@@ -384,8 +385,6 @@
                 success: function (e, data) {
                     that.checkTableCount();
                     that._loading(false);
-                    that._renderTableFooter();
-                    that.checkTableCount();
                 },
                 error: function (e) {
                     //todo
@@ -451,7 +450,8 @@
             this.$el.find('.crud-mask').css({
                 width: width,
                 height: height,
-                'margin-top': -height
+                'margin-top': -height,
+                'line-height': height + 'px'
             })[isLoading ? 'show' : 'hide']();
         }
     });
