@@ -23,22 +23,28 @@ window.BackboneCrudTable = {
             },
             columns: [{
                 name: 'title',
-                displayName: '标题'
+                displayName: '标题',
+                width: 100
             }, {
                 name: 'url',
-                displayName: '链接地址'
+                displayName: '链接地址',
+                width: 100
             }, {
                 name: 'img',
-                displayName: '图片'
+                displayName: '图片',
+                width: 50
             }, {
                 name: 'prov',
-                displayName: '省份'
+                displayName: '省份',
+                width: 30
             }, {
                 name: 'city',
-                displayName: '城市'
+                displayName: '城市',
+                width: 30
             }, {
                 name: 'fr',
-                displayName: '平台'
+                displayName: '平台',
+                width: 40
             }]
         });
 

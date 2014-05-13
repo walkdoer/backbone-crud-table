@@ -34,11 +34,10 @@ table tbody td {
     line-height: 19px;
     padding: 10px 8px;
     color: #666;
-    white-space: nowrap;
     border-bottom: 1px solid #e8e8e8;
     border-top: 1px solid #e8e8e8;
-    max-width: 100px;
-    overflow: hidden;
+    max-width: 300px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 table thead th {
     line-height: 19px;

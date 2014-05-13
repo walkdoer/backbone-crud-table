@@ -73,6 +73,13 @@
             fragment.appendChild($(Btn(btn))[0]);
         });
         return fragment;
+    },
+    calculateTotalWidth = function (columns) {
+        var totalWidth = 0;
+        _.each(columns, function (col) {
+            totalWidth += col.width;
+        });
+        return totalWidth;
     };
     window.CrudTable = Backbone.View.extend({
 
@@ -88,6 +95,7 @@
             this.editable = options.editable;
             this.autoLoad = options.autoLoad === undefined ? true : options.autoLoad;
             this.options = options;
+            this.tableWidth = calculateTotalWidth(this.columns);
             this._defineView();
             this._createModelFromColumns(options.columns);
             this.listenTo(this.rowList, 'add', this.add);
@@ -98,13 +106,14 @@
          * 渲染
          */
         render: function () {
+            
             this.setElement($('<table class="crud-table"></table>'));
-            this.$el.addClass(this.className);
+            this.$el.addClass(this.className).css('width', this.tableWidth);
             this._renderTableHeader();
             this._renderTableBody();
             this._renderTableFooter();
             this.$loading = $('<div class="crud-mask">loading</div>');
-            this.$el.append(this.$loading);
+            this.$el.append(this.$loading.hide());
             var btnCfg;
             if ((btnCfg = this.options.buttonCfg)) {
                 this.$el.find('.crud-btn').addClass(btnCfg.buttonClass);
@@ -326,11 +335,18 @@
                 editable = this.editable,
                 buttonCfg = this.options.buttonCfg || {},
                 buttons = buttonCfg.rowButtons,
+                calculateWidthPercentage = function(columns) {
+                    var total = calculateTotalWidth(columns);
+                    _.each(columns, function (col) {
+                        col.widthPercent = col.width / total;
+                    });
+                },
                 colEditable,
                 style,
                 defaultButtons = {
                 },
                 col;
+            
             for (var i = 0, len = columns.length, content; i < len; i++) {
                 col = _.extend({}, {hidden: false, editable: true}, columns[i]);
                 if (editable && col.editable) {
@@ -339,6 +355,7 @@
                     content = '<%=' + col.name + '%>';
                 }
                 style = col.hidden ? 'display: none;' : '';
+                style += 'width:' + col.width + 'px';
                 tpl += '<td style="' + style + '">' + content + '</td>';
             }
             var buttonCfg = this.options.buttonCfg;
