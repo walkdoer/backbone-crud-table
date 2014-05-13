@@ -341,7 +341,10 @@
                 style = col.hidden ? 'display: none;' : '';
                 tpl += '<td style="' + style + '">' + content + '</td>';
             }
-            tpl += '<td class="crud-row-buttons"></td>';
+            var buttonCfg = this.options.buttonCfg;
+            if (buttonCfg && buttonCfg.rowButtons) {
+                tpl += '<td class="crud-row-buttons"></td>';
+            }
             return tpl;
         },
 
@@ -449,7 +452,7 @@
             if (buttonCfg && buttonCfg.buttons) {
                 fragment.appendChild($('<th>操作</th>')[0]);
             }
-            $head.append(fragment);
+            $head.find('tr').append(fragment);
             this.$el.append($head);
         },
 
