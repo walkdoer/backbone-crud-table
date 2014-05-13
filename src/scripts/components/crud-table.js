@@ -77,7 +77,7 @@
     calculateTotalWidth = function (columns) {
         var totalWidth = 0;
         _.each(columns, function (col) {
-            totalWidth += col.width;
+            totalWidth += col.width || 0;
         });
         return totalWidth;
     };
@@ -95,7 +95,10 @@
             this.editable = options.editable;
             this.autoLoad = options.autoLoad === undefined ? true : options.autoLoad;
             this.options = options;
-            this.tableWidth = calculateTotalWidth(this.columns);
+            var tableWidth = calculateTotalWidth(this.columns);
+            if (tableWidth) {
+                this.tableWidth = tableWidth;
+            }
             this._defineView();
             this._createModelFromColumns(options.columns);
             this.listenTo(this.rowList, 'add', this.add);
@@ -108,7 +111,10 @@
         render: function () {
             
             this.setElement($('<table class="crud-table"></table>'));
-            this.$el.addClass(this.className).css('width', this.tableWidth);
+            this.$el.addClass(this.className);
+            if (this.tableWidth) {
+                this.$el.css('width', this.tableWidth);
+            }
             this._renderTableHeader();
             this._renderTableBody();
             this._renderTableFooter();
@@ -355,7 +361,9 @@
                     content = '<%=' + col.name + '%>';
                 }
                 style = col.hidden ? 'display: none;' : '';
-                style += 'width:' + col.width + 'px';
+                if (col.width !== undefined) {
+                    style += 'width:' + col.width + 'px';
+                }
                 tpl += '<td style="' + style + '">' + content + '</td>';
             }
             var buttonCfg = this.options.buttonCfg;
