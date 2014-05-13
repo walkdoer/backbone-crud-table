@@ -45,6 +45,24 @@
 
 (function (window, undefined) {
     'use strict';
+
+        /**
+         * 创建全局按钮
+         */
+    var _createButtons = function (buttons) {
+        var defaultCfg = {
+                iconClass: '',
+                buttonClass: '',
+                text: ''
+            },
+            fragment = document.createDocumentFragment(),
+            Btn = _.template('<a class="crud-btn crud-<%=action%> <%=buttonClass%>"><i class="<%=iconClass%>"></i><%=text%></a>');
+        _.each(buttons, function (btn) {
+            btn = _.extend({}, defaultCfg, btn);
+            fragment.appendChild($(Btn(btn))[0]);
+        });
+        return fragment;
+    };
     window.CrudTable = Backbone.View.extend({
 
         /**
@@ -188,6 +206,10 @@
                 //渲染界面
                 render: function () {
                     this.$el.html(this.template(this.model.toJSON()));
+                    var cfg;
+                    if ((cfg = table.options.buttonCfg)) {
+                        this.$el.find('.crud-row-buttons').append(_createButtons(cfg.rowButtons));
+                    }
                     this.$labels = this.$el.find('label');
                     this.$inputs = this.$el.find('input').hide();
                     //让用户自定义其行按钮的控制
@@ -308,15 +330,7 @@
                 style = col.hidden ? 'display: none;' : '';
                 tpl += '<td style="' + style + '">' + content + '</td>';
             }
-            if (buttons) {
-                tpl += '<td>';
-                _.each(buttons, function (btn) {
-                    //使用默认的文案
-                    var btnAction = btn.action;
-                    tpl +=  '<a class="crud-btn crud-' + btnAction + '">' + (defaultButtons[btnAction] || '') + '</a>';
-                });
-                tpl += '</td>';
-            }
+            tpl += '<td class="crud-row-buttons"></td>';
             return tpl;
         },
 
@@ -404,7 +418,9 @@
          */
         _renderTableHeader: function () {
             var $caption = $('<caption>' + this.name + '</caption>');
-            $caption.append(this._createGlobalButtons());
+            if (this.options.buttonCfg) {
+                $caption.append(_createButtons(this.options.buttonCfg.buttons));
+            }
             this.$el.append($caption);
             var columns = this.columns,
                 fragment = document.createDocumentFragment(),
@@ -430,24 +446,6 @@
             this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'"></td></tr></tfoot>'));
         },
 
-
-        /**
-         * 创建全局按钮
-         */
-        _createGlobalButtons: function () {
-            var buttons = this.options.buttonCfg.buttons,
-                defaultCfg = {
-                    iconClass: '',
-                    text: ''
-                },
-                fragment = document.createDocumentFragment(),
-                Btn = _.template('<a class="crud-btn crud-h-btn crud-<%=action%>"><i class="<%=iconClass%>"></i><%=text%></a>');
-            _.each(buttons, function (btn) {
-                btn = _.extend({}, defaultCfg, btn);
-                fragment.append($(Btn(btn))[0]);
-            });
-            return fragment;
-        },
         /**
          * 渲染表格主体
          */
