@@ -213,10 +213,10 @@
                     Backbone.ajax({
                         method: 'POST',
                         url: table.options.api.update,
-                        data: _.extend(that.model.attributes, newAttrs),
+                        data: _.extend({}, that.model.attributes, newAttrs),
                         success: function (resp) {
                             if (resp.success) {
-                                that.model.set(resp.data);
+                                that.model.set(_.extend({}, that.model.attributes, resp.data));
                                 that.trigger('saveSuccess', that.model);
                                 that._editing(false);
                             } else {
@@ -282,6 +282,7 @@
                 editable = this.editable,
                 operators = this.options.operators,
                 colEditable,
+                style,
                 defaultOperator = {
                     edit: '编辑',
                     delete: '删除',
@@ -291,15 +292,13 @@
                 col;
             for (var i = 0, len = columns.length, content; i < len; i++) {
                 col = _.extend({}, {hidden: false, editable: true}, columns[i]);
-                if (col.hidden) {
-                    continue;
-                }
                 if (editable && col.editable) {
                     content = '<label><%=' + col.name + '%></label><input name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
                 } else {
                     content = '<%=' + col.name + '%>';
                 }
-                tpl += '<td>' + content + '</td>';
+                style = col.hidden ? 'display: none;' : '';
+                tpl += '<td style="' + style + '">' + content + '</td>';
             }
             if (operators) {
                 tpl += '<td>';
