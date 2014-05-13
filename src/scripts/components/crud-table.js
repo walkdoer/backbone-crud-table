@@ -55,9 +55,20 @@
                 buttonClass: '',
                 text: ''
             },
+            defaultButtonText = {
+                edit: '编辑',
+                refresh: '刷新',
+                create: '添加',
+                delete: '删除',
+                cancel: '取消',
+                save: '保存'
+            },
             fragment = document.createDocumentFragment(),
             Btn = _.template('<a class="crud-btn crud-<%=action%> <%=buttonClass%>"><i class="<%=iconClass%>"></i><%=text%></a>');
         _.each(buttons, function (btn) {
+            if(!btn.text) {
+                btn.text = defaultButtonText[btn.action];
+            }
             btn = _.extend({}, defaultCfg, btn);
             fragment.appendChild($(Btn(btn))[0]);
         });
@@ -104,7 +115,7 @@
         events: {
             //清空所有数据
             'click .crud-clear-all': 'clearAll',
-            'click .crud-add': 'addNew',
+            'click .crud-create': 'addNew',
             'click .crud-refresh': 'refresh'
         },
         /**
@@ -314,10 +325,6 @@
                 colEditable,
                 style,
                 defaultButtons = {
-                    edit: '编辑',
-                    delete: '删除',
-                    cancel: '取消',
-                    save: '保存'
                 },
                 col;
             for (var i = 0, len = columns.length, content; i < len; i++) {
