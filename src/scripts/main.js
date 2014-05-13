@@ -9,12 +9,18 @@ window.BackboneCrudTable = {
     init: function() {
         'use strict';
         var CRUDTable = window.CRUDTable;
-        var table = new CRUDTable({
+        var table = new CrudTable({
             name: '联系人表',
             storage: 'remote',
             editable: true,
             url: 'getlist',
             operators: ['delete', 'edit'],
+            api: {
+                read: 'getlist'
+            },
+            parse: function (result) {
+                return result.data
+            },
             columns: [{
                 name: 'title',
                 displayName: '标题'
@@ -34,22 +40,10 @@ window.BackboneCrudTable = {
                 name: 'fr',
                 displayName: '平台'
             }]
-//             data: [{
-//                 name: 'andrew',
-//                 tel: '888',
-//                 address: '天堂路1号'
-//             }, {
-//                 name: 'andrew',
-//                 tel: '888',
-//                 address: '天堂路1号'
-//             }, {
-//                 name: 'andrew',
-//                 tel: '888',
-//                 address: '天堂路1号'
-//             }]
         });
 
         $('body').append(table.render().el);
+        table.fetch();
     }
 };
 

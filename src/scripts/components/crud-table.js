@@ -160,13 +160,17 @@
                 model: RowModel,
                 api: this.options.api,
                 idAttribute: this.options.idAttribute,
-                parse: this.options.parse,
                 sync: function(method, model, options) {
                     options = options || {};
                     options.url = model.api[method.toLowerCase()];
                     return Backbone.sync.apply(this, arguments);
                 }
             };
+            
+            var parse = this.options.parse;
+            if (parse) {
+                collectionModelCfg.parse = parse;
+            }
 
             //本地存储模式，则使用localStorage进行存储数据
             var storage = this.options.storage;
@@ -224,7 +228,7 @@
                     this.$labels = this.$el.find('label');
                     this.$inputs = this.$el.find('input').hide();
                     //让用户自定义其行按钮的控制
-                    this.rowButtonControl();
+                    this.rowButtonControl && this.rowButtonControl();
                     this.displayButton(['save', 'cancel'], false);
                     return this;
                 },
@@ -320,7 +324,7 @@
             var tpl = '',
                 columns = this.columns,
                 editable = this.editable,
-                buttonCfg = this.options.buttonCfg,
+                buttonCfg = this.options.buttonCfg || {},
                 buttons = buttonCfg.rowButtons,
                 colEditable,
                 style,
