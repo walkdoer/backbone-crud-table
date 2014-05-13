@@ -207,21 +207,26 @@
                 //保存
                 save: function () {
                     var that = this;
-                    Backbone.emulateJSON = false;
-                    this.model.save(table.options.params.save(this._getValues()), {
-                        success: function (m, result) {
-                            if (result.success) {
+                    var newAttrs =  table.options.params.save(this._getValues());
+
+                    //Backbone.emulateJSON = false;
+                    Backbone.ajax({
+                        method: 'POST',
+                        url: table.options.api.update,
+                        data: _.extend(that.model.attributes, newAttrs),
+                        success: function (resp) {
+                            if (resp.success) {
+                                that.model.set(resp.data);
                                 that.trigger('saveSuccess', that.model);
+                                that._editing(false);
                             } else {
-                                that.trigger('saveError', result.msg);
+                                that.trigger('saveError', resp.msg);
                             }
                         },
                         error: function () {
                             that.trigger('saveError', that.model);
                         }
                     });
-                    this.addingNew = false;
-                    this._editing(false);
                 },
 
                 //取消
