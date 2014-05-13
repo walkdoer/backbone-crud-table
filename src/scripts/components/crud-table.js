@@ -50,6 +50,9 @@
          * 创建全局按钮
          */
     var _createButtons = function (buttons) {
+        if (!buttons) {
+            return null;
+        }
         var defaultCfg = {
                 iconClass: '',
                 buttonClass: '',
@@ -74,6 +77,7 @@
         });
         return fragment;
     },
+    emptyFunc = function () {},
     calculateTotalWidth = function (columns) {
         var totalWidth = 0;
         _.each(columns, function (col) {
@@ -95,6 +99,14 @@
             this.editable = options.editable;
             this.autoLoad = options.autoLoad === undefined ? true : options.autoLoad;
             this.options = options;
+            if (options.buttonCfg) {
+                this.headerButtons = options.buttonCfg.buttons;
+            }
+            var buttonColumn = this._getRowButtons(this.columns);
+            if (buttonColumn) {
+                this.rowButtons = buttonColumn.buttons;
+                this.rowButtonControl = buttonColumn.display || emptyFunc;
+            }
             var tableWidth = calculateTotalWidth(this.columns);
             if (tableWidth) {
                 this.tableWidth = tableWidth;
@@ -109,7 +121,7 @@
          * 渲染
          */
         render: function () {
-            
+
             this.setElement($('<table class="crud-table"></table>'));
             this.$el.addClass(this.className);
             if (this.tableWidth) {
@@ -118,12 +130,9 @@
             this._renderTableHeader();
             this._renderTableBody();
             this._renderTableFooter();
+
             this.$loading = $('<div class="crud-mask">loading</div>');
             this.$el.append(this.$loading.hide());
-            var btnCfg;
-            if ((btnCfg = this.options.buttonCfg)) {
-                this.$el.find('.crud-btn').addClass(btnCfg.buttonClass);
-            }
             return this;
         },
 
@@ -133,6 +142,17 @@
             'click .crud-create': 'addNew',
             'click .crud-refresh': 'refresh'
         },
+
+        _getRowButtons: function (columns) {
+            var result;
+            _.each(columns, function (col) {
+                if (col.name === 'crud-buttons') {
+                    result = col;
+                }
+            });
+            return result;
+        },
+
         /**
          * 定义并创建Model
          * 创建 Row 和 RowCollection 对于的Model
@@ -224,9 +244,7 @@
                 initialize: function (options) {
                     this.options = options;
                     this.addingNew = options.addingNew;
-                    if (table.options.buttonCfg) {
-                        this.rowButtonControl = table.options.buttonCfg.display || emptyFun;
-                    }
+                    this.rowButtonControl = table.rowButtonControl;
                     //数据改变，重新渲染
                     this.listenTo(this.model, 'change', this.render);
                     //model删除数据，则界面Remove数据
@@ -237,9 +255,7 @@
                 render: function () {
                     this.$el.html(this.template(this.model.toJSON()));
                     var cfg;
-                    if ((cfg = table.options.buttonCfg)) {
-                        this.$el.find('.crud-row-buttons').append(_createButtons(cfg.rowButtons));
-                    }
+                    this.$el.find('.crud-row-buttons').append(_createButtons(table.rowButtons));
                     this.$labels = this.$el.find('label');
                     this.$inputs = this.$el.find('input').hide();
                     //让用户自定义其行按钮的控制
@@ -339,36 +355,31 @@
             var tpl = '',
                 columns = this.columns,
                 editable = this.editable,
-                buttonCfg = this.options.buttonCfg || {},
-                buttons = buttonCfg.rowButtons,
+                buttons = this.rowButtons,
                 calculateWidthPercentage = function(columns) {
                     var total = calculateTotalWidth(columns);
                     _.each(columns, function (col) {
                         col.widthPercent = col.width / total;
                     });
                 },
-                colEditable,
                 style,
-                defaultButtons = {
-                },
                 col;
-            
+
             for (var i = 0, len = columns.length, content; i < len; i++) {
                 col = _.extend({}, {hidden: false, editable: true}, columns[i]);
-                if (editable && col.editable) {
-                    content = '<label><%=' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
-                } else {
-                    content = '<%=' + col.name + '%>';
+                content = '';
+                if (col.name !== 'crud-buttons') {
+                    if (editable && col.editable) {
+                        content = '<label><%=' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
+                    } else {
+                        content = '<%=' + col.name + '%>';
+                    }
                 }
                 style = col.hidden ? 'display: none;' : '';
                 if (col.width !== undefined) {
                     style += 'width:' + col.width + 'px';
                 }
-                tpl += '<td style="' + style + '">' + content + '</td>';
-            }
-            var buttonCfg = this.options.buttonCfg;
-            if (buttonCfg && buttonCfg.rowButtons) {
-                tpl += '<td class="crud-row-buttons"></td>';
+                tpl += '<td class="' + (col.name === 'crud-buttons' ? 'crud-row-buttons' : '') + '" style="' + style + '">' + content + '</td>';
             }
             return tpl;
         },
@@ -457,8 +468,8 @@
          */
         _renderTableHeader: function () {
             var $caption = $('<caption>' + this.name + '</caption>');
-            if (this.options.buttonCfg) {
-                $caption.append(_createButtons(this.options.buttonCfg.buttons));
+            if (this.headerButtons) {
+                $caption.append(_createButtons(this.headerButtons));
             }
             this.$el.append($caption);
             var columns = this.columns,
@@ -472,10 +483,6 @@
                 }
                 col = columns[i];
                 fragment.appendChild($('<th>' + col.displayName + '</th>')[0]);
-            }
-            var buttonCfg = this.options.buttonCfg;
-            if (buttonCfg && buttonCfg.buttons) {
-                fragment.appendChild($('<th>操作</th>')[0]);
             }
             $head.find('tr').append(fragment);
             this.$el.append($head);
