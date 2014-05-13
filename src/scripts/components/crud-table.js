@@ -107,6 +107,7 @@
                 },
                 api: this.options.api,
                 parse: function (result) {
+                    //兼容返回结果不是标准的backbone返回结果
                     if (result.id !== undefined) {
                         return result;
                     } else {
@@ -210,13 +211,13 @@
                     this.model.save(table.options.params.save(this._getValues()), {
                         success: function (m, result) {
                             if (result.success) {
-                                that.trigger('addSuccess', that.model);
+                                that.trigger('saveSuccess', that.model);
                             } else {
-                                that.trigger('addError', result.msg);
+                                that.trigger('saveError', result.msg);
                             }
                         },
                         error: function () {
-                            that.trigger('addError', that.model);
+                            that.trigger('saveError', that.model);
                         }
                     });
                     this.addingNew = false;
@@ -319,6 +320,9 @@
                 this.$el.find('tbody').empty();
             }
             var rowView = new this.RowView({model: row, columns: this.columns, addingNew: this.addingNew});
+            this.listenTo(rowView, 'saveError', function (msg) {
+                alert('失败:' + msg);
+            });
             //this.listenTo(rowView, 'delete', this.clear);
             this.$el.find('tbody').append(rowView.render().$el);
             if (this.addingNew) {
@@ -335,11 +339,11 @@
                 rowView = new this.RowView({model: new this.RowModel(), columns: this.columns});
             this.$el.append(rowView.render().$el);
             rowView.edit();
-            this.listenTo(rowView, 'addSuccess', function (model) {
+            this.listenTo(rowView, 'saveSuccess', function (model) {
                 that.rowList.add(model);
                 rowView.remove();
             });
-            this.listenTo(rowView, 'addError', function (msg) {
+            this.listenTo(rowView, 'saveError', function (msg) {
                 alert('失败:' + msg);
             });
             //this.addingNew = true;
