@@ -15,8 +15,7 @@
  * var crudTable = new CRUDTable({
  *     name: '联系人表',
  *     storage: 'local',
- *     operators: [‘delete', 'edit'],
- *     editable: true,  
+ *     editable: true,
  *     columns: [{
  *         name: 'address',
  *         displayName: '地址'
@@ -47,8 +46,10 @@
 (function (window, undefined) {
     'use strict';
     window.CrudTable = Backbone.View.extend({
-            
-        btnGroup: '<a class="crud-btn crud-h-btn crud-add">添加</a><a class="crud-btn crud-h-btn crud-clear-all">清空所有数据</a>',
+
+        btnGroup: '<a class="crud-btn crud-h-btn crud-add">添加</a>' +
+                  '<a class="crud-btn crud-h-btn crud-clear-all">清空所有数据</a>' +
+                  '<a class="crud-btn crud-h-btn crud-refresh">刷新</a>',
         /**
          * 初始化
          */
@@ -72,20 +73,20 @@
          */
         render: function () {
             var that = this;
-            this.setElement($('<table></table>'));
+            this.setElement($('<table class="crud-table"></table>'));
             this.$el.addClass(this.className);
             this._renderTableHeader();
             that._renderTableBody();
             this.$loading = $('<div class="crud-mask">loading</div>');
             this.$el.append(this.$loading);
-            this.autoLoad && this.fetch();
             return this;
         },
 
         events: {
             //清空所有数据
             'click .crud-clear-all': 'clearAll',
-            'click .crud-add': 'addNew'
+            'click .crud-add': 'addNew',
+            'click .crud-refresh': 'refresh'
         },
         /**
          * 定义并创建Model
@@ -174,6 +175,9 @@
                 initialize: function (options) {
                     this.options = options;
                     this.addingNew = options.addingNew;
+                    if (table.options.buttonCfg) {
+                        this.rowButtonControl = table.options.buttonCfg.display || emptyFun;
+                    }
                     //数据改变，重新渲染
                     this.listenTo(this.model, 'change', this.render);
                     //model删除数据，则界面Remove数据
@@ -185,7 +189,9 @@
                     this.$el.html(this.template(this.model.toJSON()));
                     this.$labels = this.$el.find('label');
                     this.$inputs = this.$el.find('input').hide();
-                    this._displayBtns(['save', 'cancel'], false);
+                    //让用户自定义其行按钮的控制
+                    this.rowButtonControl();
+                    this.displayButton(['save', 'cancel'], false);
                     return this;
                 },
 
@@ -207,12 +213,12 @@
                 //保存
                 save: function () {
                     var that = this;
-                    var newAttrs =  table.options.params.save(this._getValues());
-
+                    var newAttrs =  table.options.params.save(this._getValues()),
+                        url = table.options.api[this.model.isNew() ? 'create' : 'update'];
                     //Backbone.emulateJSON = false;
                     Backbone.ajax({
                         method: 'POST',
-                        url: table.options.api.update,
+                        url: url,
                         data: _.extend({}, that.model.attributes, newAttrs),
                         success: function (resp) {
                             if (resp.success) {
@@ -243,10 +249,10 @@
                 },
 
                 //控制按钮显示与隐藏
-                _displayBtns: function (btns, isShow) {
+                displayButton: function (btns, isShow) {
                     var that = this;
                     _.each(btns, function (btn) {
-                       that.$el.find('.crud-' + btn)[isShow ? 'show' : 'hide'](); 
+                        that.$el.find('.crud-' + btn)[isShow ? 'show' : 'hide']();
                     });
                 },
 
@@ -264,8 +270,8 @@
                 //切换为编辑状态
                 _editing: function (isEditing) {
                     this.$el[isEditing ? 'addClass' : 'removeClass']('editing');
-                    this._displayBtns(['edit', 'delete'], !isEditing);
-                    this._displayBtns(['save', 'cancel'], isEditing);
+                    this.displayButton(['edit', 'delete'], !isEditing);
+                    this.displayButton(['save', 'cancel'], isEditing);
                     this.$labels[isEditing ? 'hide' : 'show']();
                     //显示所有的编辑框
                     this.$inputs[isEditing ? 'show' : 'hide']();
@@ -280,10 +286,11 @@
             var tpl = '',
                 columns = this.columns,
                 editable = this.editable,
-                operators = this.options.operators,
+                buttonCfg = this.options.buttonCfg,
+                buttons = buttonCfg.buttons,
                 colEditable,
                 style,
-                defaultOperator = {
+                defaultButtons = {
                     edit: '编辑',
                     delete: '删除',
                     cancel: '取消',
@@ -293,23 +300,23 @@
             for (var i = 0, len = columns.length, content; i < len; i++) {
                 col = _.extend({}, {hidden: false, editable: true}, columns[i]);
                 if (editable && col.editable) {
-                    content = '<label><%=' + col.name + '%></label><input name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
+                    content = '<label><%=' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
                 } else {
                     content = '<%=' + col.name + '%>';
                 }
                 style = col.hidden ? 'display: none;' : '';
                 tpl += '<td style="' + style + '">' + content + '</td>';
             }
-            if (operators) {
+            if (buttons) {
                 tpl += '<td>';
-                _.each(operators, function (val) {
+                _.each(buttons, function (val) {
                     if (typeof val === 'string') {
                         //使用默认的文案
-                        tpl +=  '<a class="crud-btn crud-' + val + '">' + (defaultOperator[val] || '') + '</a>';
+                        tpl +=  '<a class="crud-btn crud-' + val + '">' + (defaultButtons[val] || '') + '</a>';
                     }
                 });
-                tpl +=  '<a class="crud-btn crud-save">' + defaultOperator.save + '</a>';
-                tpl +=  '<a class="crud-btn crud-cancel">' + defaultOperator.cancel + '</a>';
+                tpl +=  '<a class="crud-btn crud-save">' + defaultButtons.save + '</a>';
+                tpl +=  '<a class="crud-btn crud-cancel">' + defaultButtons.cancel + '</a>';
                 tpl += '</td>';
             }
             return tpl;
@@ -357,14 +364,15 @@
 
 
         //删除
-        //clear: function (model) {
-        //    this.rowList.remove(model);
-        //},
+        refresh: function () {
+            this.fetch();
+        },
 
         //删除全部
         clearAll: function () {
             _.invoke(this.rowList.toArray(), 'destroy');
         },
+
 
         /**
          * 加载数据
@@ -374,6 +382,7 @@
             this._loading(true);
             this.rowList.fetch({
                 success: function (e, data) {
+                    that.checkTableCount();
                     that._loading(false);
                     that._renderTableFooter();
                     that.checkTableCount();
@@ -389,6 +398,8 @@
             if (this.rowList.length === 0) {
                 this.$el.find('tbody').append($('<tr class="crud-no-data"><td colspan="' +
                     (this.columns.length + 1) +'">没有数据</td></tr>'));
+            } else {
+                this.$el.find('.crud-no-data').remove();
             }
         },
 
@@ -409,7 +420,8 @@
                 col = columns[i];
                 fragment.appendChild($('<th>' + col.displayName + '</th>')[0]);
             }
-            if (this.options.operators) {
+            var buttonCfg = this.options.buttonCfg;
+            if (buttonCfg && buttonCfg.buttons) {
                 fragment.appendChild($('<th>操作</th>')[0]);
             }
             $head.append(fragment);
@@ -426,13 +438,21 @@
          */
         _renderTableBody: function (e, result) {
             this.$el.append('<tbody>');
+            this.checkTableCount();
         },
 
         /**
          * 切换界面的loading状态
          */
         _loading: function (isLoading) {
-            this.$el.find('.crud-mask')[isLoading ? 'show' : 'hide']();
+            var $tbody = this.$el.find('tbody');
+            var height = $tbody.height(),
+                width = $tbody.width();
+            this.$el.find('.crud-mask').css({
+                width: width,
+                height: height,
+                'margin-top': -height
+            })[isLoading ? 'show' : 'hide']();
         }
     });
 })(window);
