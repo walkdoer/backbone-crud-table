@@ -47,9 +47,6 @@
     'use strict';
     window.CrudTable = Backbone.View.extend({
 
-        btnGroup: '<a class="crud-btn crud-h-btn crud-add">添加</a>' +
-                  '<a class="crud-btn crud-h-btn crud-clear-all">清空所有数据</a>' +
-                  '<a class="crud-btn crud-h-btn crud-refresh">刷新</a>',
         /**
          * 初始化
          */
@@ -72,14 +69,17 @@
          * 渲染
          */
         render: function () {
-            var that = this;
             this.setElement($('<table class="crud-table"></table>'));
             this.$el.addClass(this.className);
             this._renderTableHeader();
-            that._renderTableBody();
-            that._renderTableFooter();
+            this._renderTableBody();
+            this._renderTableFooter();
             this.$loading = $('<div class="crud-mask">loading</div>');
             this.$el.append(this.$loading);
+            var btnCfg;
+            if ((btnCfg = this.options.buttonCfg)) {
+                this.$el.find('.crud-btn').addClass(btnCfg.buttonClass);
+            }
             return this;
         },
 
@@ -288,7 +288,7 @@
                 columns = this.columns,
                 editable = this.editable,
                 buttonCfg = this.options.buttonCfg,
-                buttons = buttonCfg.buttons,
+                buttons = buttonCfg.rowButtons,
                 colEditable,
                 style,
                 defaultButtons = {
@@ -310,14 +310,11 @@
             }
             if (buttons) {
                 tpl += '<td>';
-                _.each(buttons, function (val) {
-                    if (typeof val === 'string') {
-                        //使用默认的文案
-                        tpl +=  '<a class="crud-btn crud-' + val + '">' + (defaultButtons[val] || '') + '</a>';
-                    }
+                _.each(buttons, function (btn) {
+                    //使用默认的文案
+                    var btnAction = btn.action;
+                    tpl +=  '<a class="crud-btn crud-' + btnAction + '">' + (defaultButtons[btnAction] || '') + '</a>';
                 });
-                tpl +=  '<a class="crud-btn crud-save">' + defaultButtons.save + '</a>';
-                tpl +=  '<a class="crud-btn crud-cancel">' + defaultButtons.cancel + '</a>';
                 tpl += '</td>';
             }
             return tpl;
@@ -406,7 +403,9 @@
          * 渲染表格头部
          */
         _renderTableHeader: function () {
-            this.$el.append($('<caption>' + this.name + this.btnGroup + '</caption>'));
+            var $caption = $('<caption>' + this.name + '</caption>');
+            $caption.append(this._createGlobalButtons());
+            this.$el.append($caption);
             var columns = this.columns,
                 fragment = document.createDocumentFragment(),
                 col,
@@ -428,10 +427,27 @@
         },
 
         _renderTableFooter: function () {
-            this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'">'
-                        + this.btnGroup + '</td></tr></tfoot>'));
+            this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'"></td></tr></tfoot>'));
         },
 
+
+        /**
+         * 创建全局按钮
+         */
+        _createGlobalButtons: function () {
+            var buttons = this.options.buttonCfg.buttons,
+                defaultCfg = {
+                    iconClass: '',
+                    text: ''
+                },
+                fragment = document.createDocumentFragment(),
+                Btn = _.template('<a class="crud-btn crud-h-btn crud-<%=action%>"><i class="<%=iconClass%>"></i><%=text%></a>');
+            _.each(buttons, function (btn) {
+                btn = _.extend({}, defaultCfg, btn);
+                fragment.append($(Btn(btn))[0]);
+            });
+            return fragment;
+        },
         /**
          * 渲染表格主体
          */
