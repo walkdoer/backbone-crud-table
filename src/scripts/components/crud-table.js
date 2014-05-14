@@ -281,15 +281,14 @@
                 //删除
                 clear: function () {
                     var that = this,
-                        requestData;
-                    Backbone.emulateJSON = true;
-                    var beforeDelete = table.listeners.beforeDelete;
-                    if (beforeDelete) {
-                        requestData = beforeDelete.call(this);
-                    } else {
                         requestData = {
                             id: this.model.id
                         };
+                    Backbone.emulateJSON = true;
+                    var beforeDelete = table.listeners.beforeDelete;
+                    //提供接口给用户自定义删除操作的请求参数
+                    if (beforeDelete) {
+                        requestData = beforeDelete.call(this, requestData);
                     }
                     this.model.destroy({
                         data: requestData,
@@ -304,9 +303,14 @@
 
                 //保存
                 save: function () {
-                    var that = this;
-                    var newAttrs =  table.options.params.save(this._getValues()),
-                        url = table.options.api[this.model.isNew() ? 'create' : 'update'];
+                    var that = this,
+                        newAttrs = this._getValues(),
+                        beforeSave = table.listeners.beforeSave;
+                    //提供接口给用户自定义保存操作的请求参数
+                    if (beforeSave) {
+                        newAttrs = beforeSave.call(this, newAttrs);
+                    }
+                    var url = table.options.api[this.model.isNew() ? 'create' : 'update'];
                     //Backbone.emulateJSON = false;
                     Backbone.ajax({
                         method: 'POST',

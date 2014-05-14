@@ -22,8 +22,13 @@ window.BackboneCrudTable = {
                 return result.data
             },
             listeners: {
-                beforeDelete: function () {
-                    return this.model.id;
+                beforeDelete: function (requestParams) {
+                    console.log('可以在这里修改requestParams');
+                    return requestParams;
+                },
+                beforeSave: function (requestParams) {
+                    console.log('可以在这里修改requestParams');
+                    return requestParams;
                 }
             },
             columns: [{
