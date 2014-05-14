@@ -21,6 +21,11 @@ window.BackboneCrudTable = {
             parse: function (result) {
                 return result.data
             },
+            listeners: {
+                beforeDelete: function () {
+                    return this.model.id;
+                }
+            },
             columns: [{
                 name: 'title',
                 displayName: '标题',
@@ -45,6 +50,27 @@ window.BackboneCrudTable = {
                 name: 'fr',
                 displayName: '平台',
                 width: 40
+            }, {
+                name: 'crud-buttons',
+                displayName: '操作',
+                width: 100,
+                buttons: [{
+                    action: 'delete',
+                    text: '删除',
+                    iconClass: 'icon-trash'
+                }, {
+                    action: 'edit',
+                    text: '编辑',
+                    iconClass: 'icon-edit'
+                }, {
+                    action: 'save',
+                    text: '保存',
+                    iconClass: 'icon-checkmark'
+                }, {
+                    action: 'cancel',
+                    text: '取消',
+                    iconClass: 'icon-undo'
+                }]
             }]
         });
 

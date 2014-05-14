@@ -87,6 +87,7 @@
             this.className = options.className;
             this.editable = options.editable;
             this.autoLoad = options.autoLoad === undefined ? true : options.autoLoad;
+            this.listeners = options.listeners || {};
             this.options = options;
             if (options.buttonCfg) {
                 this.headerButtons = options.buttonCfg.buttons;
@@ -279,10 +280,19 @@
 
                 //删除
                 clear: function () {
-                    var that = this;
+                    var that = this,
+                        requestData;
                     Backbone.emulateJSON = true;
+                    var beforeDelete = table.listeners.beforeDelete;
+                    if (beforeDelete) {
+                        requestData = beforeDelete.call(this);
+                    } else {
+                        requestData = {
+                            id: this.model.id
+                        };
+                    }
                     this.model.destroy({
-                        data: table.options.params.delete(this.model),
+                        data: requestData,
                         success: function() {
                             that.trigger('deleteSuccess', that.model);
                         },
