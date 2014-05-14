@@ -58,20 +58,9 @@
                 buttonClass: '',
                 text: ''
             },
-            defaultButtonText = {
-                edit: '编辑',
-                refresh: '刷新',
-                create: '添加',
-                delete: '删除',
-                cancel: '取消',
-                save: '保存'
-            },
             fragment = document.createDocumentFragment(),
             Btn = _.template('<a class="crud-btn crud-<%=action%> <%=buttonClass%>"><i class="<%=iconClass%>"></i><%=text%></a>');
         _.each(buttons, function (btn) {
-            if(!btn.text) {
-                btn.text = defaultButtonText[btn.action];
-            }
             btn = _.extend({}, defaultCfg, btn);
             fragment.appendChild($(Btn(btn))[0]);
         });
@@ -254,10 +243,28 @@
                 //渲染界面
                 render: function () {
                     this.$el.html(this.template(this.model.toJSON()));
-                    var cfg;
+                    var that = this,
+                        inputEditableCls = 'crud-input-editable',
+                        labelEditableCls = 'crud-label-editable',
+                        cfg;
                     this.$el.find('.crud-row-buttons').append(_createButtons(table.rowButtons));
-                    this.$labels = this.$el.find('label');
-                    this.$inputs = this.$el.find('input').hide();
+                    this.$el.find('label');
+                    this.$el.find('input').hide();
+
+                    var columns = table.columns;
+                    _.each(columns, function (col) {
+                        var colEditable = col.editable;
+                        if (typeof col.editable === 'function') {
+                            colEditable = col.editable.apply(that);
+                        }
+                        //栏目默认是可编辑的
+                        if (colEditable || colEditable === undefined) {
+                            that.$el.find('input[name=' + col.name + ']').addClass(inputEditableCls);
+                            that.$el.find('label[for=' + col.name + ']').addClass(labelEditableCls);
+                        }
+                    });
+                    this.$inputs = this.$el.find('.' + inputEditableCls);
+                    this.$labels = this.$el.find('.' + labelEditableCls);
                     //让用户自定义其行按钮的控制
                     this.rowButtonControl && this.rowButtonControl();
                     this.displayButton(['save', 'cancel'], false);
@@ -371,8 +378,8 @@
                 col = _.extend({}, {hidden: false, editable: true}, columns[i]);
                 content = '';
                 if (col.name !== 'crud-buttons') {
-                    if (editable && col.editable) {
-                        content = '<label><%=' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
+                    if (editable) {
+                        content = '<label for="' + col.name + '"><%=' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
                     } else {
                         content = '<%=' + col.name + '%>';
                     }
