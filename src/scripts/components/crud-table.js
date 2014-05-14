@@ -157,7 +157,7 @@
          */
         _createModelFromColumns: function (columns) {
             //获取每一个表格栏目的默认取值
-            var defaultValues = {},
+            var table = this,
                 getValidator = function (columns) {
                     var validator = {};
                     _.each(columns, function (col) {
@@ -166,17 +166,25 @@
                         }
                     });
                     return validator;
+                },
+                getDefaultValue = function (columns, cxt) {
+                    var defaultValues = {};
+                    for (var i = 0, len = columns.length; i < len; i++) {
+                        var item = columns[i],
+                            defaultVal = item.defaultValue;
+                        if (typeof defaultVal === 'function') {
+                            defaultVal = defaultVal.call(cxt, table.rowList);
+                        }
+                        defaultValues[item.name] = defaultVal === undefined ? '' :
+                                                    defaultVal;
+                    }
+                    return defaultValues;
                 };
-            for (var i = 0, len = columns.length; i < len; i++) {
-                var item = columns[i];
-                defaultValues[item.name] = item.defaultValue === undefined ? '' :
-                                            item.defaultValue;
-            }
             //定义表格每一行的Model
             var RowModel = Backbone.Model.extend({
                 idAttribute: this.options.idAttribute,
                 defaults: function () {
-                    return defaultValues;
+                    return getDefaultValue(columns, this);
                 },
                 validation: getValidator(columns),
                 api: this.options.api,
@@ -193,9 +201,6 @@
                     options.wait = true;
                     options.url = model.api[method.toLowerCase()];
                     return Backbone.sync.apply(this, arguments);
-                },
-                validate: function () {
-                    //todo 校验
                 }
             });
             this.RowModel = RowModel;
@@ -209,7 +214,7 @@
                     return Backbone.sync.apply(this, arguments);
                 }
             };
-            
+
             var parse = this.options.parse;
             if (parse) {
                 collectionModelCfg.parse = parse;
