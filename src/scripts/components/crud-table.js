@@ -157,7 +157,16 @@
          */
         _createModelFromColumns: function (columns) {
             //获取每一个表格栏目的默认取值
-            var defaultValues = {};
+            var defaultValues = {},
+                getValidator = function (columns) {
+                    var validator = {};
+                    _.each(columns, function (col) {
+                        if (col.validate) {
+                            validator[col.name] = col.validate;
+                        }
+                    });
+                    return validator;
+                };
             for (var i = 0, len = columns.length; i < len; i++) {
                 var item = columns[i];
                 defaultValues[item.name] = item.defaultValue === undefined ? '' :
@@ -169,6 +178,7 @@
                 defaults: function () {
                     return defaultValues;
                 },
+                validation: getValidator(columns),
                 api: this.options.api,
                 parse: function (result) {
                     //兼容返回结果不是标准的backbone返回结果
@@ -243,6 +253,7 @@
                     this.options = options;
                     this.addingNew = options.addingNew;
                     this.rowButtonControl = table.rowButtonControl;
+                    Backbone.Validation.bind(this);
                     //数据改变，重新渲染
                     this.listenTo(this.model, 'change', this.render);
                     //model删除数据，则界面Remove数据
@@ -323,6 +334,10 @@
                     //提供接口给用户自定义保存操作的请求参数
                     if (beforeSave) {
                         newAttrs = beforeSave.call(this, newAttrs);
+                    }
+                    this.model.set(newAttrs, {silent: true});
+                    if (!this.model.isValid(true)) {
+                        return;
                     }
                     var url = table.options.api[this.model.isNew() ? 'create' : 'update'];
                     //Backbone.emulateJSON = false;
