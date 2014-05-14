@@ -106,7 +106,7 @@
             this._createModelFromColumns(options.columns);
             this.listenTo(this.rowList, 'add', this.add);
             this.listenTo(this.rowList, 'remove', this.checkTableCount);
-            this.listenTo(this.rowList, 'reset', this.render);
+            this.listenTo(this.rowList, 'reset', this.resetTableBody);
         },
 
         /**
@@ -117,7 +117,8 @@
             this.$el.addClass('crud-table');
             this.$el.addClass(this.className);
             this._renderTableHeader();
-            this._renderTableBody();
+            this.$tbody = this._renderTableBody();
+            this.checkTableCount();
             this._renderTableFooter();
 
             this.$loading = $('<div class="crud-mask">loading</div>');
@@ -140,6 +141,14 @@
                 }
             });
             return result;
+        },
+
+        resetTableBody: function (collection) {
+            var that = this;
+            this.$tbody.empty();
+            collection.each(function (model) {
+                that.add(model);
+            });
         },
 
         /**
@@ -423,18 +432,14 @@
         add: function (row) {
             //添加新的记录，则清空没有数据的提示
             if (this.rowList.length === 1) {
-                this.$el.find('tbody').empty();
+                this.$tbody.empty();
             }
-            var rowView = new this.RowView({model: row, columns: this.columns, addingNew: this.addingNew});
+            var rowView = new this.RowView({model: row, columns: this.columns});
             this.listenTo(rowView, 'saveError', function (msg) {
                 alert('失败:' + msg);
             });
             //this.listenTo(rowView, 'delete', this.clear);
-            this.$el.find('tbody').append(rowView.render().$el);
-            if (this.addingNew) {
-                this.curAdd = rowView;
-                this.addingNew = false;
-            }
+            this.$tbody.append(rowView.render().$el);
         },
 
         /**
@@ -490,7 +495,7 @@
 
         checkTableCount: function () {
             if (this.rowList.length === 0) {
-                this.$el.find('tbody').append($('<tr class="crud-no-data"><td colspan="' +
+                this.$tbody.append($('<tr class="crud-no-data"><td colspan="' +
                     (this.columns.length + 1) +'">没有数据</td></tr>'));
             } else {
                 this.$el.find('.crud-no-data').remove();
@@ -530,15 +535,16 @@
          * 渲染表格主体
          */
         _renderTableBody: function (e, result) {
-            this.$el.append('<tbody>');
-            this.checkTableCount();
+            var $tbody = $('<tbody>')
+            this.$el.append($tbody);
+            return $tbody;
         },
 
         /**
          * 切换界面的loading状态
          */
         _loading: function (isLoading) {
-            var $tbody = this.$el.find('tbody');
+            var $tbody = this.$tbody;
             var height = $tbody.height(),
                 width = $tbody.width();
             this.$el.find('.crud-mask').css({
