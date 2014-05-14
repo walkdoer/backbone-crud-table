@@ -6,7 +6,6 @@ body {
     width: 300px;
 }
 table {
-    width: 600px;
     font-size: 12px;
     border-collapse: collapse;
     box-sizing: border-box;
@@ -36,7 +35,6 @@ table tbody td {
     color: #666;
     border-bottom: 1px solid #e8e8e8;
     border-top: 1px solid #e8e8e8;
-    max-width: 300px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 table thead th {

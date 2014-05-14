@@ -125,7 +125,7 @@
             this.setElement($('<table class="crud-table"></table>'));
             this.$el.addClass(this.className);
             if (this.tableWidth) {
-                this.$el.css('width', this.tableWidth);
+                this.$el.attr('width', this.tableWidth);
             }
             this._renderTableHeader();
             this._renderTableBody();
@@ -341,6 +341,7 @@
                     this.$el[isEditing ? 'addClass' : 'removeClass']('editing');
                     this.displayButton(['edit', 'delete'], !isEditing);
                     this.displayButton(['save', 'cancel'], isEditing);
+                    this.rowButtonControl();
                     this.$labels[isEditing ? 'hide' : 'show']();
                     //显示所有的编辑框
                     this.$inputs[isEditing ? 'show' : 'hide']();
@@ -363,6 +364,7 @@
                     });
                 },
                 style,
+                width,
                 col;
 
             for (var i = 0, len = columns.length, content; i < len; i++) {
@@ -377,9 +379,10 @@
                 }
                 style = col.hidden ? 'display: none;' : '';
                 if (col.width !== undefined) {
-                    style += 'width:' + col.width + 'px';
+                    width = 'width="' + col.width + '"';
+                    style += 'max-width:' + col.width + 'px;"'
                 }
-                tpl += '<td class="' + (col.name === 'crud-buttons' ? 'crud-row-buttons' : '') + '" style="' + style + '">' + content + '</td>';
+                tpl += '<td class="' + (col.name === 'crud-buttons' ? 'crud-row-buttons' : '') + '" style="' + style + '"' + width +'>' + content + '</td>';
             }
             return tpl;
         },
