@@ -290,6 +290,10 @@
                     if (beforeDelete) {
                         requestData = beforeDelete.call(this, requestData);
                     }
+                    //如果用户返回false,则表示不删除
+                    if (requestData === false) {
+                        return;
+                    }
                     this.model.destroy({
                         data: requestData,
                         success: function() {
