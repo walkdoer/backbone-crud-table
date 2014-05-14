@@ -76,6 +76,7 @@
     };
     window.CrudTable = Backbone.View.extend({
 
+        tagName: 'table',
         /**
          * 初始化
          */
@@ -105,6 +106,7 @@
             this._createModelFromColumns(options.columns);
             this.listenTo(this.rowList, 'add', this.add);
             this.listenTo(this.rowList, 'remove', this.checkTableCount);
+            this.listenTo(this.rowList, 'reset', this.render);
         },
 
         /**
@@ -112,11 +114,8 @@
          */
         render: function () {
 
-            this.setElement($('<table class="crud-table"></table>'));
+            this.$el.addClass('crud-table');
             this.$el.addClass(this.className);
-            if (this.tableWidth) {
-                this.$el.attr('width', this.tableWidth);
-            }
             this._renderTableHeader();
             this._renderTableBody();
             this._renderTableFooter();
@@ -461,7 +460,7 @@
 
         //删除
         refresh: function () {
-            this.fetch();
+            this.fetch(true);
         },
 
         //删除全部
@@ -473,10 +472,11 @@
         /**
          * 加载数据
          */
-        fetch: function () {
+        fetch: function (refresh) {
             var that = this;
             this._loading(true);
             this.rowList.fetch({
+                reset: refresh,
                 success: function (e, data) {
                     that.checkTableCount();
                     that._loading(false);
