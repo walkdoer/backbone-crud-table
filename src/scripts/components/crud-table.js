@@ -551,12 +551,14 @@
             var $tbody = this.$tbody;
             var height = $tbody.height(),
                 width = $tbody.width();
-            this.$el.find('.crud-mask').css({
+            var $mask = this.$el.find('.crud-mask').css({
                 width: width,
                 height: height,
                 'margin-top': -height,
                 'line-height': height + 'px'
             })[isLoading ? 'show' : 'hide']();
+            var loading = this.options.loading;
+            loading && loading($mask);
         }
     });
 })(window);
