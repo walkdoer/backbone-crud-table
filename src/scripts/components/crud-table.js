@@ -59,7 +59,7 @@
                 text: ''
             },
             fragment = document.createDocumentFragment(),
-            Btn = _.template('<a class="crud-btn crud-<%=action%> <%=buttonClass%>"><i class="<%=iconClass%>"></i><%=text%></a>');
+            Btn = _.template('<a class="crud-btn crud-<%=action%> <%=buttonClass%>"><i class="crud-btn-icon <%=iconClass%>"></i><%=text%></a>');
         _.each(buttons, function (btn) {
             btn = _.extend({}, defaultCfg, btn);
             fragment.appendChild($(Btn(btn))[0]);
