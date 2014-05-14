@@ -252,19 +252,25 @@
                     this.$el.find('input').hide();
 
                     var columns = table.columns;
-                    _.each(columns, function (col) {
-                        var colEditable = col.editable;
-                        if (typeof col.editable === 'function') {
-                            colEditable = col.editable.apply(that);
-                        }
-                        //栏目默认是可编辑的
-                        if (colEditable || colEditable === undefined) {
-                            that.$el.find('input[name=' + col.name + ']').addClass(inputEditableCls);
-                            that.$el.find('label[for=' + col.name + ']').addClass(labelEditableCls);
-                        }
-                    });
-                    this.$inputs = this.$el.find('.' + inputEditableCls);
-                    this.$labels = this.$el.find('.' + labelEditableCls);
+                    //新纪录不需要控制栏目的可编辑与否
+                    if (!this.model.isNew()) {
+                        _.each(columns, function (col) {
+                            var colEditable = col.editable;
+                            if (typeof col.editable === 'function') {
+                                colEditable = col.editable.apply(that);
+                            }
+                            //栏目默认是可编辑的
+                            if (colEditable || colEditable === undefined) {
+                                that.$el.find('input[name=' + col.name + ']').addClass(inputEditableCls);
+                                that.$el.find('label[for=' + col.name + ']').addClass(labelEditableCls);
+                            }
+                        });
+                        this.$inputs = this.$el.find('.' + inputEditableCls);
+                        this.$labels = this.$el.find('.' + labelEditableCls);
+                    } else {
+                        this.$inputs = this.$el.find('input');
+                        this.$labels = this.$el.find('label');
+                    }
                     //让用户自定义其行按钮的控制
                     this.rowButtonControl && this.rowButtonControl();
                     this.displayButton(['save', 'cancel'], false);
@@ -314,7 +320,7 @@
                 //取消
                 cancel: function () {
                     this._editing(false);
-                    if (this.addingNew) {
+                    if (this.model.isNew()) {
                         this.model.destroy();
                     }
                 },
