@@ -251,7 +251,9 @@
 
                 //渲染界面
                 render: function () {
-                    this.$el.html(this.template(this.model.toJSON()));
+                    var renderData = this.model.toJSON();
+                    renderData.__crud_order__ = table.rowList.indexOf(this.model) + 1;
+                    this.$el.html(this.template(renderData));
                     var that = this,
                         inputEditableCls = 'crud-input-editable',
                         labelEditableCls = 'crud-label-editable',
@@ -409,12 +411,14 @@
             for (var i = 0, len = columns.length, content; i < len; i++) {
                 col = _.extend({}, {hidden: false, editable: true}, columns[i]);
                 content = '';
-                if (col.name !== 'crud-buttons') {
+                if (['crud-buttons', 'crud-order'].indexOf(col.name) < 0) {
                     if (editable) {
                         content = '<label for="' + col.name + '"><%=' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
                     } else {
                         content = '<%=' + col.name + '%>';
                     }
+                } else if (col.name === 'crud-order') {
+                    content = '<%= __crud_order__ %>';
                 }
                 style = col.hidden ? 'display: none;' : '';
                 if (col.width !== undefined) {
