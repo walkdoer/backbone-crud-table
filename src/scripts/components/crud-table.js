@@ -236,6 +236,15 @@
          */
         _defineView: function () {
             var table = this;
+            // See: http://thedersen.com/projects/backbone-validation/#configuration/callbacks
+            //_.extend(Backbone.Validation.callbacks, {
+                //valid: function (view, attr, selector) {
+                    //console.log('valid');
+                //},
+                //invalid: function (view, attr, error, selector) {
+                    //console.log('invalid');
+                //}
+            //});
             //表格行的View
             var rowViewCfg = {
                 tagName: 'tr',
@@ -253,7 +262,20 @@
                     this.options = options;
                     this.addingNew = options.addingNew;
                     this.rowButtonControl = table.rowButtonControl;
-                    Backbone.Validation.bind(this);
+                    Backbone.Validation.bind(this, {
+                        valid: function (view, attr) {
+                            var $el = view.$('[name=' + attr + ']');
+                            $el.removeClass('invalid');
+                            var $container = $el.closest('td');
+                            $container.find('.error-help').remove();
+                        },
+                        invalid: function (view, attr, error) {
+                            var $el = view.$('[name=' + attr + ']');
+                            $el.addClass('invalid');
+                            var $container = $el.closest('td');
+                            $container.append('<p class="error-help">' + error + '</p>');
+                        }
+                    });
                     //数据改变，重新渲染
                     this.listenTo(this.model, 'change', this.render);
                     //model删除数据，则界面Remove数据
@@ -398,6 +420,7 @@
                     this.displayButton(['edit', 'delete'], !isEditing);
                     this.displayButton(['save', 'cancel'], isEditing);
                     this.rowButtonControl();
+                    this.$('.error-help').hide();
                     this.$labels[isEditing ? 'hide' : 'show']();
                     //显示所有的编辑框
                     this.$inputs[isEditing ? 'show' : 'hide']();
