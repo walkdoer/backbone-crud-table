@@ -289,13 +289,16 @@
 
                 //渲染界面
                 render: function () {
-                    var renderData = this.model.toJSON();
-                    renderData.__crud_order__ = table.rowList.indexOf(this.model) + 1;
+                    var renderData = this.model.toJSON(),
+                        rowList = table.rowList,
+                        pos = rowList.indexOf(this.model);
+                    //新添加的记录不在collection中，所以pos是-1,
+                    //由于新添加的记录是追加的形式，因此 __crud_order__ = collection.length
+                    renderData.__crud_order__ = (pos >= 0 ? pos : rowList.length) + 1;
                     this.$el.html(this.template(renderData));
                     var that = this,
                         inputEditableCls = 'crud-input-editable',
-                        labelEditableCls = 'crud-label-editable',
-                        cfg;
+                        labelEditableCls = 'crud-label-editable';
                     this.$el.find('.crud-row-buttons').append(_createButtons(table.rowButtons));
                     this.$el.find('label');
                     this.$el.find('input').hide();
@@ -342,12 +345,20 @@
                     if (requestData === false) {
                         return;
                     }
-                    this.model.destroy({
+                    var url = table.options.api.delete;
+                    //Backbone.emulateJSON = false;
+                    Backbone.ajax({
+                        method: 'POST',
+                        url: url,
                         data: requestData,
-                        success: function() {
-                            that.trigger('deleteSuccess', that.model);
+                        success: function (resp) {
+                            if (resp.success) {
+                                that.trigger('deleteSuccess', that.model);
+                            } else {
+                                that.trigger('deleteError', resp.msg);
+                            }
                         },
-                        error: function() {
+                        error: function () {
                             that.trigger('deleteError', that.model);
                         }
                     });
@@ -466,7 +477,7 @@
                 style = col.hidden ? 'display: none;' : '';
                 if (col.width !== undefined) {
                     width = 'width="' + col.width + '"';
-                    style += 'max-width:' + col.width + 'px;"'
+                    style += 'max-width:' + col.width + 'px;"';
                 }
                 tpl += '<td class="' + (col.name === 'crud-buttons' ? 'crud-row-buttons' : '') + '" style="' + style + '"' + width +'>' + content + '</td>';
             }
@@ -484,6 +495,9 @@
             var rowView = new this.RowView({model: row, columns: this.columns});
             this.listenTo(rowView, 'saveError', function (msg) {
                 alert('失败:' + msg);
+            });
+            this.listenTo(rowView, 'deleteError', function (msg) {
+                alert('删除失败:' + msg);
             });
             //this.listenTo(rowView, 'delete', this.clear);
             this.$tbody.append(rowView.render().$el);
