@@ -467,9 +467,9 @@
                 content = '';
                 if (['crud-buttons', 'crud-order'].indexOf(col.name) < 0) {
                     if (editable) {
-                        content = '<label for="' + col.name + '"><%=' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%=' + col.name + '%>"/>';
+                        content = '<label for="' + col.name + '"><%-' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%-' + col.name + '%>"/>';
                     } else {
-                        content = '<%=' + col.name + '%>';
+                        content = '<%-' + col.name + '%>';
                     }
                 } else if (col.name === 'crud-order') {
                     content = '<%= __crud_order__ %>';
