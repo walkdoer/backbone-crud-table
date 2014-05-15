@@ -66,6 +66,17 @@
         });
         return fragment;
     },
+
+
+    /**
+     * 状态切换生成器
+     */
+    statusSwitcherGenerator = function (statusType) {
+        return function (status) {
+            this.$el[status? 'addClass' : 'removeClass'](statusType);
+            this.setStatus(statusType, status);
+        };
+    },
     emptyFunc = function () {},
     calculateTotalWidth = function (columns) {
         var totalWidth = 0;
@@ -76,7 +87,9 @@
     };
 
     var STATUS_PREFIX = 'crud-',
-        STATUS_DELETING = STATUS_PREFIX + 'deleting';
+        STATUS_DELETING = STATUS_PREFIX + 'deleting',
+        STATUS_EDITING = STATUS_PREFIX + 'editing',
+        STATUS_SAVING = STATUS_PREFIX + 'saving';
     window.CrudTable = Backbone.View.extend({
 
         tagName: 'table',
@@ -341,7 +354,7 @@
                 //删除
                 clear: function () {
                     //正在删除中则不能点击删除
-                    if (this.getStatus('deleting')) {
+                    if (this.getStatus(STATUS_DELETING)) {
                         return;
                     }
                     var that = this,
@@ -386,6 +399,10 @@
 
                 //保存
                 save: function () {
+                    //防止重复点击按钮
+                    if (this.getStatus(STATUS_SAVING)) {
+                        return;
+                    }
                     var that = this,
                         newAttrs = this._getValues(),
                         beforeSave = table.listeners.beforeSave;
@@ -398,12 +415,16 @@
                         return;
                     }
                     var url = table.options.api[this.model.isNew() ? 'create' : 'update'];
-                    //Backbone.emulateJSON = false;
+
+                    //切换为"保存中"状态
+                    this._saving(true);
+
                     Backbone.ajax({
                         method: 'POST',
                         url: url,
                         data: _.extend({}, that.model.attributes, newAttrs),
                         success: function (resp) {
+                            that._saving(false);
                             if (resp.success) {
                                 that.model.set(_.extend({}, that.model.attributes, resp.data));
                                 that.trigger('saveSuccess', that.model);
@@ -413,6 +434,7 @@
                             }
                         },
                         error: function () {
+                            that._saving(false);
                             that.trigger('saveError', that.model);
                         }
                     });
@@ -430,7 +452,7 @@
                 //编辑
                 edit: function () {
                     //正在删除中则不能点击编辑
-                    if (this.getStatus('deleting')) {
+                    if (this.getStatus(STATUS_DELETING)) {
                         return;
                     }
                     this._editing(true);
@@ -457,7 +479,8 @@
 
                 //切换为编辑状态
                 _editing: function (isEditing) {
-                    this.$el[isEditing ? 'addClass' : 'removeClass']('editing');
+                    this.setStatus(STATUS_EDITING, isEditing);
+                    this.$el[isEditing ? 'addClass' : 'removeClass'](STATUS_EDITING);
                     this.displayButton(['edit', 'delete'], !isEditing);
                     this.displayButton(['save', 'cancel'], isEditing);
                     this.rowButtonControl();
@@ -469,20 +492,34 @@
                     isEditing && this.$inputs.eq(0).focus();
                 },
 
+
+                /**
+                 * 设置状态
+                 */
                 setStatus: function (type, status) {
                     this.status[type] = status;
                 },
 
+
+                /**
+                 * 获取状态
+                 */
                 getStatus: function (type) {
                     return this.status[type];
                 },
+
+
                 /**
                  * 切换界面的删除状态
                  */
-                _deleting: function (deleting) {
-                    this.$el[deleting ? 'addClass' : 'removeClass'](STATUS_DELETING);
-                    this.setStatus('deleting', deleting);
-                }
+                _deleting: statusSwitcherGenerator(STATUS_DELETING),
+
+
+                /**
+                 * 切换保存状态
+                 */
+                _saving: statusSwitcherGenerator(STATUS_SAVING)
+
             };
             this.RowView = Backbone.View.extend(rowViewCfg);
         },
