@@ -74,6 +74,9 @@
         });
         return totalWidth;
     };
+
+    var STATUS_PREFIX = 'crud-',
+        STATUS_DELETING = STATUS_PREFIX + 'deleting';
     window.CrudTable = Backbone.View.extend({
 
         tagName: 'table',
@@ -267,6 +270,8 @@
                     this.options = options;
                     this.addingNew = options.addingNew;
                     this.rowButtonControl = table.rowButtonControl;
+                    //状态变量，记录deleting editing等状态
+                    this.status = {};
                     Backbone.Validation.bind(this, {
                         valid: function (view, attr) {
                             var $el = view.$('[name=' + attr + ']');
@@ -331,6 +336,10 @@
 
                 //删除
                 clear: function () {
+                    //正在删除中则不能点击删除
+                    if (this.getStatus('deleting')) {
+                        return;
+                    }
                     var that = this,
                         requestData = {
                             id: this.model.id
@@ -346,6 +355,7 @@
                         return;
                     }
                     var url = table.options.api.delete;
+                    this._deleting(true);
                     //Backbone.emulateJSON = false;
                     Backbone.ajax({
                         method: 'POST',
@@ -359,10 +369,12 @@
                                 that.remove();
                                 that.trigger('deleteSuccess', that.model);
                             } else {
+                                this._deleting(false);
                                 that.trigger('deleteError', resp.msg);
                             }
                         },
                         error: function () {
+                            this._deleting(false);
                             that.trigger('deleteError', that.model);
                         }
                     });
@@ -412,6 +424,10 @@
 
                 //编辑
                 edit: function () {
+                    //正在删除中则不能点击编辑
+                    if (this.getStatus('deleting')) {
+                        return;
+                    }
                     this._editing(true);
                 },
 
@@ -446,6 +462,21 @@
                     this.$inputs[isEditing ? 'show' : 'hide']();
                     //聚焦在第一个编辑框
                     isEditing && this.$inputs.eq(0).focus();
+                },
+
+                setStatus: function (type, status) {
+                    this.status[type] = status;
+                },
+
+                getStatus: function (type) {
+                    return this.status[type];
+                },
+                /**
+                 * 切换界面的删除状态
+                 */
+                _deleting: function (deleting) {
+                    this.$el[deleting ? 'addClass' : 'removeClass'](STATUS_DELETING);
+                    this.setStatus('deleting', deleting);
                 }
             };
             this.RowView = Backbone.View.extend(rowViewCfg);
@@ -621,5 +652,6 @@
             var loading = this.options.loading;
             loading && loading($mask);
         }
+
     });
 })(window);
