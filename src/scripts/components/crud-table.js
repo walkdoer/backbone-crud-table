@@ -94,6 +94,8 @@
             this.listeners = options.listeners || {};
             //记录新添加记录的个数
             this._appendLength = 0;
+            //status
+            this.status = {};
             this.options = options;
             if (options.buttonCfg) {
                 this.headerButtons = options.buttonCfg.buttons;
@@ -485,6 +487,10 @@
             this.RowView = Backbone.View.extend(rowViewCfg);
         },
 
+
+        /**
+         * 创建表格的Template
+         */
         _createTemplate: function () {
             var tpl = '',
                 columns = this.columns,
@@ -526,6 +532,7 @@
             return tpl;
         },
 
+
         /**
          * 添加记录
          */
@@ -545,10 +552,15 @@
             this.$tbody.append(rowView.render().$el);
         },
 
+
         /**
          * 添加新记录
          */
         addNew: function () {
+            //加载过程中不能够添加新纪录
+            if (this.getStatus('loading')) {
+                return;
+            }
             //新添加记录+1
             this._appendLength += 1;
             var that = this,
@@ -562,9 +574,22 @@
             this.listenTo(rowView, 'saveError', function (msg) {
                 alert('失败:' + msg);
             });
-            //this.addingNew = true;
-            //this.rowList.create();
-            //this.curAdd.edit();
+        },
+
+
+        /**
+         * 设置状态
+         */
+        setStatus: function (type, status) {
+            this.status[type] = status;
+        },
+
+
+        /**
+         * 获取状态
+         */
+        getStatus: function (type) {
+            return this.status[type];
         },
 
 
@@ -572,6 +597,7 @@
         refresh: function () {
             this.fetch(true);
         },
+
 
         //删除全部
         clearAll: function () {
@@ -587,17 +613,21 @@
             this._loading(true);
             this.rowList.fetch({
                 reset: refresh,
-                success: function (e, data) {
+                success: function () {
                     that.checkTableCount();
                     that._loading(false);
                 },
-                error: function (e) {
+                error: function () {
                     //todo
                     that._loading(false);
                 }
             });
         },
 
+
+        /**
+         * 检查表格的行数
+         */
         checkTableCount: function () {
             if (this.rowList.length === 0) {
                 this.$tbody.append($('<tr class="crud-no-data"><td colspan="' +
@@ -606,6 +636,7 @@
                 this.$el.find('.crud-no-data').remove();
             }
         },
+
 
         /**
          * 渲染表格头部
@@ -632,9 +663,14 @@
             this.$el.append($head);
         },
 
+
+        /**
+         * 渲染table footer
+         */
         _renderTableFooter: function () {
             //this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'"></td></tr></tfoot>'));
         },
+
 
         /**
          * 渲染表格主体
@@ -645,10 +681,12 @@
             return $tbody;
         },
 
+
         /**
          * 切换界面的loading状态
          */
         _loading: function (isLoading) {
+            this.setStatus('loading', isLoading);
             var $tbody = this.$tbody;
             var height = $tbody.height(),
                 width = $tbody.width();
