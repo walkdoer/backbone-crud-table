@@ -362,19 +362,19 @@
                         url: url,
                         data: requestData,
                         success: function (resp) {
+                            that._deleting(false);
                             if (resp.success) {
                                 //从collection中移除
-                                table.rowList.remove(this.model);
+                                table.rowList.remove(that.model);
                                 //删除view
                                 that.remove();
                                 that.trigger('deleteSuccess', that.model);
                             } else {
-                                this._deleting(false);
                                 that.trigger('deleteError', resp.msg);
                             }
                         },
                         error: function () {
-                            this._deleting(false);
+                            that._deleting(false);
                             that.trigger('deleteError', that.model);
                         }
                     });
