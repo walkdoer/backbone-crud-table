@@ -353,6 +353,10 @@
                         data: requestData,
                         success: function (resp) {
                             if (resp.success) {
+                                //从collection中移除
+                                table.rowList.remove(this.model);
+                                //删除view
+                                that.remove();
                                 that.trigger('deleteSuccess', that.model);
                             } else {
                                 that.trigger('deleteError', resp.msg);
@@ -589,7 +593,7 @@
         },
 
         _renderTableFooter: function () {
-            this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'"></td></tr></tfoot>'));
+            //this.$el.append($('<tfoot><tr><td colspan="' + (this.columns.length + 1) +'"></td></tr></tfoot>'));
         },
 
         /**
