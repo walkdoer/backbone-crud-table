@@ -486,14 +486,9 @@
             var tpl = '',
                 columns = this.columns,
                 editable = this.editable,
-                buttons = this.rowButtons,
-                calculateWidthPercentage = function(columns) {
-                    var total = calculateTotalWidth(columns);
-                    _.each(columns, function (col) {
-                        col.widthPercent = col.width / total;
-                    });
-                },
                 style,
+                validate,
+                validator = '',
                 width,
                 col;
 
@@ -502,7 +497,16 @@
                 content = '';
                 if (['crud-buttons', 'crud-order'].indexOf(col.name) < 0) {
                     if (editable) {
-                        content = '<label for="' + col.name + '"><%-' + col.name + '%></label><input type="text" name="' + col.name+ '" value="<%-' + col.name + '%>"/>';
+                        validate = col.validate;
+                        if (validate && validate.maxLength) {
+                            validator += 'maxlength=' + validate.maxLength + ' ';
+                        }
+                        if (validate && validate.minLength) {
+                            validator += 'minlength=' + validate.minLength + ' ';
+                        }
+                        content = '<label for="' + col.name + '"><%-' + col.name +
+                            '%></label><input type="text" name="' +
+                            col.name+ '" value="<%-' + col.name + '%>"' + validator + '/>';
                     } else {
                         content = '<%-' + col.name + '%>';
                     }
@@ -630,8 +634,8 @@
         /**
          * 渲染表格主体
          */
-        _renderTableBody: function (e, result) {
-            var $tbody = $('<tbody>')
+        _renderTableBody: function () {
+            var $tbody = $('<tbody>');
             this.$el.append($tbody);
             return $tbody;
         },
