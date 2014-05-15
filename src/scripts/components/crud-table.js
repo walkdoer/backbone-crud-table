@@ -92,6 +92,8 @@
             this.editable = options.editable;
             this.autoLoad = options.autoLoad === undefined ? true : options.autoLoad;
             this.listeners = options.listeners || {};
+            //记录新添加记录的个数
+            this._appendLength = 0;
             this.options = options;
             if (options.buttonCfg) {
                 this.headerButtons = options.buttonCfg.buttons;
@@ -299,7 +301,7 @@
                         pos = rowList.indexOf(this.model);
                     //新添加的记录不在collection中，所以pos是-1,
                     //由于新添加的记录是追加的形式，因此 __crud_order__ = collection.length
-                    renderData.__crud_order__ = (pos >= 0 ? pos : rowList.length) + 1;
+                    renderData.__crud_order__ = (pos >= 0 ? pos : rowList.length + table._appendLength - 1) + 1;
                     this.$el.html(this.template(renderData));
                     var that = this,
                         inputEditableCls = 'crud-input-editable',
@@ -418,6 +420,7 @@
                 cancel: function () {
                     this._editing(false);
                     if (this.model.isNew()) {
+                        table._appendLength--;
                         this.model.destroy();
                     }
                 },
@@ -546,6 +549,8 @@
          * 添加新记录
          */
         addNew: function () {
+            //新添加记录+1
+            this._appendLength += 1;
             var that = this,
                 rowView = new this.RowView({model: new this.RowModel(), columns: this.columns});
             this.$el.append(rowView.render().$el);
